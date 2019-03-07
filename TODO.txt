@@ -1,0 +1,5 @@
+1. rabbitmq
+2.Move constants to files+
+3.Do to_mysql in parallel thread, with saving file line pointer or
+  Send queries to rabbitmq and receive in another node, that throws it in consumer 'to_mysql' and then write queries to db
+4.Do something with constant vars

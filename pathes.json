@@ -1,0 +1,30 @@
+{
+    "CONSTANTS": {
+        "is_remote": false,
+        "location": "/home/user/Desktop/Orders/constants.json"
+    },
+    "DEFAULT_CONSTANTS": {
+        "is_remote": false,
+        "location": "/home/user/Desktop/Orders/constants-default.json"
+    },
+    "DEFAULT_SETTINGS": {
+        "is_remote": false,
+        "location": "/home/user/Desktop/Orders/settings-default.json"
+    },
+    "GEN_OUT": {
+        "is_remote": false,
+        "location": "/home/user/Desktop/Orders/out"
+    },
+    "LOG": {
+        "is_remote": false,
+        "location": "/home/user/Desktop/Orders/log"
+    },
+    "ROOT": {
+        "is_remote": false,
+        "location": "/home/user/Desktop/Orders"
+    },
+    "SETTINGS": {
+        "is_remote": false,
+        "location": "/home/user/Desktop/Orders/settings.json"
+    }
+}

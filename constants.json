@@ -1,0 +1,119 @@
+{
+  "default_length": 1024,
+  "x_default": 12,
+  "y_default": 23,
+  "a_default": 7,
+  "c_default": 3,
+  "m_default": 32768,
+  "t0_default": 1,
+
+  "zones": [
+  "Red",
+  "Green",
+  "Blue"
+  ],
+
+  "zones_percent": [
+    0.15,
+    0.6,
+    0.25
+  ],
+
+  "1-state_percent": {
+        "Blue": 0.6,
+        "Red": 0.4
+    },
+
+  "weekends": [
+        0,
+        6
+    ],
+
+  "direction": [
+  "Buy",
+  "Sell"
+  ],
+  "currency_pairs": [
+  "EUR/USD",
+  "GBP/USD",
+  "USD/JPY",
+  "USD/CHF",
+  "USD/CAD",
+  "AUD/USD",
+  "NZD/USD",
+  "EUR/GBP",
+  "EUR/AUD",
+  "GBP/JPY",
+  "EUR/JPY",
+  "EUR/CAD",
+  "GBP/CHF",
+  "EUR/NZD",
+  "GBP/NZD",
+  "JPY/NZD"
+  ],
+
+  "currency_values": [
+  1.21585,
+  1.0743,
+  0.89857,
+  0.91036,
+  1.23045,
+  1.12326,
+  1.11443,
+  1.07979,
+  0.97051,
+  0.93516,
+  0.83608,
+  0.88199,
+  1.15967,
+  1.14843,
+  1.09904,
+  1.20828
+  ],
+
+  "statuses": [
+  "New",
+  "To provider",
+  "Reject",
+  "Partial filled",
+  "Filled"
+  ],
+
+  "descriptions": [
+  "Descrription0",
+  "Descrription1",
+  "Descrription2",
+  "Descrription3",
+  "Descrription4",
+  "Descrription5",
+  "Descrription6",
+  "Descrription7",
+  "Descrription8",
+  "Descrription9",
+  "Descrription1",
+  "Descrription11",
+  "Descrription12",
+  "Descrription13",
+  "Descrription14",
+  "Descrription15"
+  ],
+
+  "tags": [
+  "Tag0",
+  "Tag1",
+  "Tag2",
+  "Tag3",
+  "Tag4",
+  "Tag5",
+  "Tag6",
+  "Tag7",
+  "Tag8",
+  "Tag9",
+  "Tag1",
+  "Tag11",
+  "Tag12",
+  "Tag13",
+  "Tag14",
+  "Tag15"
+  ]
+}
