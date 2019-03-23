@@ -1,8 +1,6 @@
-import math
 import time
 import traceback
 from datetime import datetime
-from os import path
 
 import config.PathProvider as provider
 import config

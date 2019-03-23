@@ -4,7 +4,6 @@ import services.json as sjson
 settings = dict()
 
 
-
 def save(write=sjson.write):
     global settings
     try:

@@ -1,3 +1,4 @@
+import root
 from config import PathProvider as provider
 import services.json as sjson
 
