@@ -39,9 +39,12 @@ class Logger:
         Format: [current_time][log_level]: text
         """
         if self.log_level >= log_level:
-            self.append("[{}][{}]: {}\n".format(datetime.now().replace(microsecond=0),
-                                                       _LogLevel.title[log_level], text),
-                               path.join(self.location, self.file))
+            log = "[{}][{}]: {}\n".format(datetime.now().replace(microsecond=0), _LogLevel.title[log_level], text)
+
+            if self.append is None:
+                print(log)
+            else:
+                self.append(log, path.join(self.location, self.file))
 
     def log_trace(self, text):
         self.__log(_LogLevel.TRACE, text)

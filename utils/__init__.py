@@ -20,7 +20,8 @@ def delete_excess_files(directory, max):
             files = [name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))]
             files_amount = len(files)
     except:
-        logger.log_warn("Excess files in '{}' directory was not deleted correctly, {} files left".format(directory, files_amount))
+        logger.log_warn("Excess files in '{}' directory was not deleted correctly, {} files left"
+                        .format(directory, files_amount))
 
 
 def get_date_file_name(extension):

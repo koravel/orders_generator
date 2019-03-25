@@ -14,6 +14,7 @@ import generators.PriceGenerator as pricegen
 import generators.VolumeGenerator as volgen
 import config
 import utils
+from converters import OrderToMySQLInsert
 
 
 def setup_generators():
@@ -252,16 +253,6 @@ def setup():
     one_state_blue_start = green_zone_finish + (1 - one_state_blue_percent) * blue_zone_amount
 
 
-def to_sql_string(note):
-    """
-    Converts note into sql insert command and returns formatted string
-    """
-    return "insert into order_notes values({},'{}',{},'{}','{}',{},{},{},{},'{}','{}');".format(
-        note["id"], note["status"], note["date"], note["currency_pair"], note["direction"],
-        note["init_price"], note["fill_price"], note["init_volume"], note["fill_volume"],
-        note["description"], note["tags"])
-
-
 def generate_notes_from(order):
     """
     Generate notes from order depending on the order position/zone
@@ -295,7 +286,7 @@ def get_notes_sequence(orders_sequence=get_orders_sequence()):
             for item in generate_notes_from(order):
                 utils.logger.log_trace(item)
                 i += 1
-                yield to_sql_string(item)
+                yield OrderToMySQLInsert.convert(item)
     except:
         utils.logger.log_error(traceback.format_exc())
     finally:
