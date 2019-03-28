@@ -8,7 +8,8 @@
         "host": "127.0.0.1",
         "order_notes_table": "order_notes",
         "password": "lazarus00",
-        "user": "root"
+        "user": "root",
+        "keep_connection_open": false
     },
     "orders_amount": 200,
     "out_files_max": 10,
@@ -18,7 +19,8 @@
         "exchange": "",
         "host": "localhost",
         "mysql_table": "order_notes_rabbit",
-        "routing_key": "order_notes"
+        "routing_key": "order_notes",
+        "enable_cache": false
     },
     "volume_precision": 8
 }

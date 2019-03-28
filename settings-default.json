@@ -8,14 +8,19 @@
         "host": "127.0.0.1",
         "order_notes_table": "order_notes",
         "password": "lazarus00",
-        "user": "root"
+        "user": "root",
+        "keep_connection_open": false
     },
     "rabbit": {
         "host": "localhost",
         "exchange": "",
         "routing_key": "order_notes",
-        "mysql_table": "order_notes_rabbit"
+        "mysql_table": "order_notes_rabbit",
+        "enable_cache": false,
+        "cache_message_lifetime": 10
     },
+    "limited_therads": false,
+    "threads_max": 10,
     "orders_amount": 200,
     "out_files_max": 10,
     "portion_amount": 100,

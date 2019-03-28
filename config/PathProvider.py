@@ -1,9 +1,12 @@
 import os
 import traceback
 
-from services.json.JSONReadService import JSONReadService
-from services.json.JSONWriteService import JSONWriteService
-from config import Config, PathKeys, PathEncoder, PathDecoder
+from config import PathKeys
+from config.Config import Config
+from serializer.PathEncoder import PathEncoder
+from serializer.PathDecoder import PathDecoder
+from service.json.JSONReadService import JSONReadService
+from service.json.JSONWriteService import JSONWriteService
 
 
 class PathProvider:

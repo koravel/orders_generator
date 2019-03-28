@@ -1,5 +1,5 @@
-from services.json.JSONWriteService import JSONWriteService
-from services.json.JSONReadService import JSONReadService
+from service.json.JSONWriteService import JSONWriteService
+from service.json.JSONReadService import JSONReadService
 from config import Config, PathKeys
 
 
