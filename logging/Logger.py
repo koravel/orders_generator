@@ -45,10 +45,14 @@ class Logger:
             if include_traceback:
                 log = "{}\n{}".format(traceback.format_exc(), log)
 
-            if self.__append_method is None or self.__location is None:
-                print(log)
-            else:
-                self.__append_method(log, path.join(self.__location, self.__file))
+            self.__transforming_log(log)
+
+    def __transforming_log(self, log):
+        if self.__append_method is None or self.__location is None:
+            print(log)
+            self.__transforming_log = print
+        else:
+            self.__append_method(log, path.join(self.__location, self.__file))
 
     def log_trace(self, text, include_traceback=False):
         self.__log(_LogLevel.TRACE, text, include_traceback)
