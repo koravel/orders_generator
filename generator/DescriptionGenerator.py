@@ -1,5 +1,5 @@
 import generator.basic.IntGenerator as intbase
-import generator.constants as consts
+import generator.constant as consts
 
 
 def get_sequence(length=consts.default_length):

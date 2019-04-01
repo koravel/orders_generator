@@ -1,5 +1,5 @@
 import generator.basic as genbase
-import generator.constants as consts
+import generator.constant as consts
 from generator.basic.Generator import Generator
 
 

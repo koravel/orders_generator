@@ -4,6 +4,9 @@ import util.TextConstants as tconst
 
 class DataBase:
     @abc.abstractmethod
-    def execute_query(self, query, params):
+    def execute_query_with_params(self, query, params):
+        raise NotImplementedError(tconst.not_implemented_text.format("execute_query"))
+
+    def execute_query(self, query):
         raise NotImplementedError(tconst.not_implemented_text.format("execute_query"))
 

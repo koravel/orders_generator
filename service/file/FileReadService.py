@@ -5,7 +5,7 @@ from service.file import OpenModes
 class FileReadService(FileService):
     @staticmethod
     def _open(obj_location, mode=OpenModes.READ):
-        return super()._open(obj_location, OpenModes.READ)
+        return super(FileReadService, FileReadService)._open(obj_location, OpenModes.READ)
 
     @staticmethod
     def read_yield(obj_location):

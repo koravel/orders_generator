@@ -1,24 +1,25 @@
 import os
 import traceback
 
-from config import PathKeys
+import config
 from config.Config import Config
+from config.Provider import Provider
 from serializer.PathEncoder import PathEncoder
 from serializer.PathDecoder import PathDecoder
 from service.json.JSONReadService import JSONReadService
 from service.json.JSONWriteService import JSONWriteService
 
 
-class PathProvider:
+class PathProvider(Provider):
     @staticmethod
-    def load():
+    def load(location, default_location, read_method=JSONReadService.read, logger=None):
         """
          Load pathes dictionary based on root file location, by default PathProvider.py
         """
         try:
-            pathes_location = os.path.join(Config.pathes[PathKeys.ROOT].location, Config.pathes_file_name)
+            pathes_location = PathProvider.__get_pathes_config_location()
             if os.path.exists(pathes_location):
-                Config.pathes = JSONReadService.read(pathes_location, PathDecoder)
+                Config.pathes = read_method(pathes_location, PathDecoder)
                 if Config.pathes is None:
                     PathProvider.__set_to_defaults()
                 else:
@@ -26,20 +27,19 @@ class PathProvider:
             else:
                 PathProvider.__set_to_defaults()
         except:
-            print("Error while loading PathProvider")
-            print(traceback.format_exc())
+            logger.log_fatal("Error while loading PathProvider")
+            logger.log_fatal(traceback.format_exc())
 
     @staticmethod
-    def save():
+    def save(write=JSONWriteService.write, logger=None):
         """
         Save pathes to .json file
         """
         try:
-            JSONWriteService.write(Config.pathes, os.path.join(Config.pathes[PathKeys.ROOT].location,
-                                                               Config.pathes_file_name), PathEncoder)
+            write(Config.pathes, PathProvider.__get_pathes_config_location(), PathEncoder)
         except:
-            print("Error while saving PathProvider")
-            print(traceback.format_exc())
+            logger.log_critical("Error while saving PathProvider")
+            logger.log_critical(traceback.format_exc())
 
     @staticmethod
     def __set_to_defaults():
@@ -62,3 +62,7 @@ class PathProvider:
                         open(path.location, "x").close()
                 else:
                     os.mkdir(path.location)
+
+    @staticmethod
+    def __get_pathes_config_location():
+        return os.path.join(config.root_location, config.pathes_file_name)

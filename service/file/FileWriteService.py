@@ -6,7 +6,7 @@ class FileWriteService(FileService):
     @staticmethod
     def _open(obj_location, mode=OpenModes.WRITE):
         if mode == OpenModes.WRITE or mode == OpenModes.APPEND:
-            return super()._open(obj_location, mode)
+            return super(FileWriteService, FileWriteService)._open(obj_location, mode)
         raise ValueError
 
     @staticmethod

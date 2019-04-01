@@ -8,7 +8,7 @@ import root
 import util
 import service.file as sf
 import generator
-import generator.constants as consts
+import generator.constant as consts
 import thread
 
 

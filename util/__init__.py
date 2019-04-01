@@ -1,6 +1,5 @@
 import os
 from datetime import datetime
-from util.Logger import Logger
 
 
 def delete_excess_files(directory, max):
@@ -31,3 +30,8 @@ def get_date_file_name(extension):
     """
     return "{}.{}".format(datetime.now().replace(microsecond=0), extension).replace(":", "_")
 
+
+def join_pathes(*pathes):
+    result = ""
+    for path in pathes:
+        os.path.join(result, path)

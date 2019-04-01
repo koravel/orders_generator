@@ -1,6 +1,6 @@
 import config
 import generator.basic.BigFloatGenerator as bfbase
-import generator.constants as consts
+import generator.constant as consts
 
 
 def get_sequence(length=consts.default_length):

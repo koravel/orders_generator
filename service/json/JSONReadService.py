@@ -6,7 +6,7 @@ class JSONReadService(FileReadService):
     @staticmethod
     def read(obj_location, extended_decoder=None):
         try:
-            result = JSONCoder.decode(super().read_all(obj_location), extended_decoder)
+            result = JSONCoder.decode(super(JSONReadService, JSONReadService).read_all(obj_location), extended_decoder)
         except Exception as ex:
             raise ex
         else:

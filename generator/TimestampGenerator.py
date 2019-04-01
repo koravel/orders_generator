@@ -1,6 +1,6 @@
 import generator.basic.IntGenerator as intbase
 import generator.basic.FloatGenerator as fbase
-import generator.constants as consts
+import generator.constant as consts
 import config
 
 

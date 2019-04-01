@@ -5,4 +5,4 @@ from service.json.JSONCoder import JSONCoder
 class JSONWriteService(FileWriteService):
     @staticmethod
     def write(obj, obj_location, extended_encoder=None):
-        super().write(JSONCoder.encode(obj, extended_encoder), obj_location)
+        super(JSONWriteService, JSONWriteService).write(JSONCoder.encode(obj, extended_encoder), obj_location)

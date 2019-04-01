@@ -13,7 +13,7 @@
   "Blue"
   ],
 
-  "zones_percent": [
+  "zones_percents": [
     0.15,
     0.6,
     0.25
@@ -34,41 +34,22 @@
   "Sell"
   ],
   "currency_pairs": [
-  "EUR/USD",
-  "GBP/USD",
-  "USD/JPY",
-  "USD/CHF",
-  "USD/CAD",
-  "AUD/USD",
-  "NZD/USD",
-  "EUR/GBP",
-  "EUR/AUD",
-  "GBP/JPY",
-  "EUR/JPY",
-  "EUR/CAD",
-  "GBP/CHF",
-  "EUR/NZD",
-  "GBP/NZD",
-  "JPY/NZD"
-  ],
-
-  "currency_values": [
-  1.21585,
-  1.0743,
-  0.89857,
-  0.91036,
-  1.23045,
-  1.12326,
-  1.11443,
-  1.07979,
-  0.97051,
-  0.93516,
-  0.83608,
-  0.88199,
-  1.15967,
-  1.14843,
-  1.09904,
-  1.20828
+    {"EUR/USD": 1.21585},
+    {"GBP/USD": 1.0743},
+    {"USD/JPY": 0.89857},
+    {"USD/CHF": 0.91036},
+    {"USD/CAD": 1.23045},
+    {"AUD/USD": 1.12326},
+    {"NZD/USD": 1.11443},
+    {"EUR/GBP": 1.07979},
+    {"EUR/AUD": 0.97051},
+    {"GBP/JPY": 0.93516},
+    {"EUR/JPY": 0.83608},
+    {"EUR/CAD": 0.88199},
+    {"GBP/CHF": 1.15967},
+    {"EUR/NZD": 1.14843},
+    {"GBP/NZD": 1.09904},
+    {"JPY/NZD": 1.20828}
   ],
 
   "statuses": [

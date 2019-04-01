@@ -1,5 +1,5 @@
 import generator.basic.FloatGenerator as floatbase
-import generator.constants as consts
+import generator.constant as consts
 import generator.basic as genbase
 
 

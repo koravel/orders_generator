@@ -15,7 +15,7 @@ class MySQLService(DataBase):
         self.keep_connection_open = keep_connection_open
         self.logger = logger
 
-    def execute_query(self, query, params=[]):
+    def execute_query_with_params(self, query, params=[]):
         try:
             if self.keep_connection_open:
                 if not self.connection.instance.is_connected():
@@ -28,6 +28,26 @@ class MySQLService(DataBase):
             cursor = connection.cursor()
 
             cursor.execute(query, params)
+
+            connection.commit()
+
+            cursor.close()
+        except:
+            self.logger.log_error(traceback.format_exc())
+
+    def execute_query(self, query):
+        try:
+            if self.keep_connection_open:
+                if not self.connection.instance.is_connected():
+                    self.connection.instance.open()
+            else:
+                self.connection.instance.open()
+
+            connection = self.connection.instance
+
+            cursor = connection.cursor()
+
+            cursor.execute(query)
 
             connection.commit()
 
