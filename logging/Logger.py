@@ -26,15 +26,19 @@ class _LogLevel:
 
 
 class Logger:
-    def setup(self, append_method, location, _log_level=_LogLevel.INFO):
+    def setup(self, append_method, location, _log_level=_LogLevel.INFO, enable_startup_caching=False):
         self.__append_method = append_method
         self.__location = location
         self.__log_level = _log_level
         self.__file = "{}.log".format(datetime.now().replace(microsecond=0)).replace(":", "_")
         self.__out_error = False
+        self.enable_startup_caching = enable_startup_caching
+        if enable_startup_caching:
+            self.journal = []
 
-        if not path.isdir(location):
-            os.mkdir(location)
+        if location is not None:
+            if not path.isdir(location):
+                os.mkdir(location)
 
     def __log(self, log_level, text, include_traceback=False):
         """
@@ -46,9 +50,26 @@ class Logger:
                 log = "{}\n{}".format(traceback.format_exc(), log)
 
             if self.__append_method is None or self.__location is None:
-                print(log)
+                if self.enable_startup_caching:
+                    self.__write_to_journal(log)
+                else:
+                    self.__write_to_console(log)
             else:
-                self.__append_method(log, path.join(self.__location, self.__file))
+                self.__clear_cache()
+                self.__write_to_source(log)
+
+    def __clear_cache(self):
+        while len(self.journal) > 0:
+            self.__write_to_source(self.journal.pop())
+
+    def __write_to_source(self, log):
+        self.__append_method(log, path.join(self.__location, self.__file))
+
+    def __write_to_journal(self, log):
+        self.journal.append(log)
+
+    def __write_to_console(self, log):
+        print(log)
 
     def log_trace(self, text, include_traceback=False):
         self.__log(_LogLevel.TRACE, text, include_traceback)

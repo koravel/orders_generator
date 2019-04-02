@@ -1,26 +1,25 @@
 {
-    "date": 1551339308.579,
-    "days_amount": 5,
-    "log_level": 6,
-    "logger_files_max": 10,
     "mysql": {
         "database": "test",
         "host": "127.0.0.1",
-        "order_notes_table": "order_notes",
+        "keep_connection_open": false,
+        "order_table": "order_notes",
         "password": "lazarus00",
-        "user": "root",
-        "keep_connection_open": false
+        "user": "root"
     },
-    "orders_amount": 200,
-    "out_files_max": 10,
-    "portion_amount": 100,
-    "price_precision": 5,
     "rabbit": {
+        "cache_message_lifetime": 10,
+        "enable_cache": false,
         "exchange": "",
         "host": "localhost",
         "mysql_table": "order_notes_rabbit",
-        "routing_key": "order_notes",
-        "enable_cache": false
+        "routing_key": "order_notes"
     },
-    "volume_precision": 8
+    "system": {
+        "limited_therads": false,
+        "log_level": 6,
+        "logger_files_max": 10,
+        "out_files_max": 10,
+        "threads_max": 10
+    }
 }

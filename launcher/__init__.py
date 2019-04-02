@@ -2,7 +2,7 @@ import time
 import traceback
 from datetime import datetime
 
-import config.PathProvider as provider
+import config.provider.PathProvider as provider
 import config
 import root
 import util

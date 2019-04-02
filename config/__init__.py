@@ -4,16 +4,6 @@ import root
 import util
 
 
-class PathKeys:
-    ROOT = "ROOT"
-    LOG = "LOG"
-    SETTINGS = "SETTINGS"
-    CONSTANTS = "CONSTANTS"
-    DEFAULT_SETTINGS = "DEFAULT_SETTINGS"
-    DEFAULT_CONSTANTS = "DEFAULT_CONSTANTS"
-    GEN_OUT = "GEN_OUT"
-
-
 __root_location = os.path.dirname(os.path.abspath(root.__file__))
 __pathes_file_name = "pathes.json"
 

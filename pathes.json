@@ -1,0 +1,30 @@
+{
+    "DEFAULT_GEN_SETTINGS": {
+        "is_remote": false,
+        "location": "D:\\CodingProjects\\Python\\orders_generator\\gen-settings-default.json"
+    },
+    "DEFAULT_SETTINGS": {
+        "is_remote": false,
+        "location": "D:\\CodingProjects\\Python\\orders_generator\\settings-default.json"
+    },
+    "GEN_OUT": {
+        "is_remote": false,
+        "location": "D:\\CodingProjects\\Python\\orders_generator\\out"
+    },
+    "GEN_SETTINGS": {
+        "is_remote": false,
+        "location": "D:\\CodingProjects\\Python\\orders_generator\\gen-settings.json"
+    },
+    "LOG": {
+        "is_remote": false,
+        "location": "D:\\CodingProjects\\Python\\orders_generator\\log"
+    },
+    "ROOT": {
+        "is_remote": false,
+        "location": "D:\\CodingProjects\\Python\\orders_generator"
+    },
+    "SETTINGS": {
+        "is_remote": false,
+        "location": "D:\\CodingProjects\\Python\\orders_generator\\settings.json"
+    }
+}

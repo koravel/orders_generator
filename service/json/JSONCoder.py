@@ -15,6 +15,7 @@ class JSONCoder:
     def decode(obj, extended_decoder=None):
         try:
             result = json.loads(s=obj, cls=extended_decoder)
+
         except json.JSONDecodeError:
             raise json.JSONDecodeError
         else:

@@ -3,7 +3,7 @@ import traceback
 import service.database.mysql as mysql
 import service.message_broker.rabbitmq as rabbit
 import config
-import config.PathProvider as provider
+import config.provider.PathProvider as provider
 import root
 import util
 import service.file as sf

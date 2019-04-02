@@ -5,7 +5,7 @@ import traceback
 from datetime import datetime
 from os import path
 
-import config.PathProvider as provider
+import config.provider.PathProvider as provider
 import config
 import generator
 import service.file as sf

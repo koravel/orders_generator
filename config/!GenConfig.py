@@ -2,7 +2,7 @@ from generator.constant import ConstKeys
 
 
 class GenConfig:
-    constants = dict()
+    settings = dict()
 
     __zones_def = [
         "Red",
