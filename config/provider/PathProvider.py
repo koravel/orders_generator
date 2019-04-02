@@ -1,9 +1,8 @@
+import os
+
 from config.Path import Path
 from config.provider import PathKeys
 from config import get_root_location
-import os
-import traceback
-
 import config
 from config.provider.Provider import Provider
 from serializer.PathEncoder import PathEncoder
@@ -44,8 +43,9 @@ class PathProvider(Provider):
             else:
                 pathes = self.__set_to_defaults()
         except:
-            self.logger.log_fatal("Error while loading PathProvider")
-            self.logger.log_fatal(traceback.format_exc())
+            self.logger.log_fatal("Error while loading PathProvider", include_traceback=True)
+        else:
+            self.logger.log_info("Pathes loaded sucessfully")
         return pathes
 
     def save(self, pathes, write=JSONWriteService.write):
@@ -55,8 +55,9 @@ class PathProvider(Provider):
         try:
             write(pathes, self.location, PathEncoder)
         except:
-            self.logger.log_critical("Error while saving PathProvider")
-            self.logger.log_critical(traceback.format_exc())
+            self.logger.log_critical("Error while saving PathProvider", include_traceback=True)
+        else:
+            self.logger.log_info("Pathes saved sucessfully")
 
     def __set_to_defaults(self):
         """

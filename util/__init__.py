@@ -1,11 +1,8 @@
 import os
 from datetime import datetime
 
-from logging.Logger import Logger
 
-default_logger = Logger()
-
-def delete_excess_files(directory, max):
+def delete_excess_files(directory, max, logger):
     """
     Delete excess files in directory, if amount more than max, starts with first file(may be incorrect in some OS)
     """
@@ -19,11 +16,11 @@ def delete_excess_files(directory, max):
             files = [name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))]
             cur_files_amount = len(files)
     except:
-        print("Excess files in '{}' directory was not deleted correctly, {} files left"
+        logger.log_info("Excess files in '{}' directory was not deleted correctly, {} files left"
                         .format(directory, cur_files_amount))
     else:
-        print("From directory '{}' has been removed {} files. {} files left"
-              .format(directory, files_amount - cur_files_amount, cur_files_amount))
+        logger.log_info("From directory '{}' has been removed {} files. {} files left"
+                         .format(directory, files_amount - cur_files_amount, cur_files_amount))
 
 
 def get_date_file_name(extension):

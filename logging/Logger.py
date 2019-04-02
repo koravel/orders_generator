@@ -26,14 +26,24 @@ class _LogLevel:
 
 
 class Logger:
-    def setup(self, append_method, location, _log_level=_LogLevel.INFO, enable_startup_caching=False):
+    def default_setup(self):
+        self.__append_method = print
+        self.log_level = _LogLevel.TRACE
+        self.__file = "{}.log".format(datetime.now().replace(microsecond=0)).replace(":", "_")
+        self.__out_error = False
+        self.enable_startup_caching = True
+        self.journal = []
+
+    def setup(self, append_method, location, log_level=_LogLevel.INFO, enable_startup_caching=False):
         self.__append_method = append_method
         self.__location = location
-        self.__log_level = _log_level
+        self.log_level = log_level
         self.__file = "{}.log".format(datetime.now().replace(microsecond=0)).replace(":", "_")
         self.__out_error = False
         self.enable_startup_caching = enable_startup_caching
-        if enable_startup_caching:
+        try:
+            tmp = self.journal
+        except:
             self.journal = []
 
         if location is not None:
@@ -44,16 +54,16 @@ class Logger:
         """
         Format: [current_time][log_level]: text
         """
-        if self.__log_level >= log_level:
+        if self.log_level >= log_level:
             log = "[{}][{}]: {}\n".format(datetime.now().replace(microsecond=0), _LogLevel.title[log_level], text)
             if include_traceback:
                 log = "{}\n{}".format(traceback.format_exc(), log)
 
+            if self.enable_startup_caching:
+                self.__write_to_journal(log)
+
             if self.__append_method is None or self.__location is None:
-                if self.enable_startup_caching:
-                    self.__write_to_journal(log)
-                else:
-                    self.__write_to_console(log)
+                self.__write_to_console(log)
             else:
                 self.__clear_cache()
                 self.__write_to_source(log)
@@ -71,23 +81,23 @@ class Logger:
     def __write_to_console(self, log):
         print(log)
 
-    def log_trace(self, text, include_traceback=False):
+    def log_trace(self, text="", include_traceback=False):
         self.__log(_LogLevel.TRACE, text, include_traceback)
 
-    def log_debug(self, text, include_traceback=False):
+    def log_debug(self, text="", include_traceback=False):
         self.__log(_LogLevel.DEBUG, text, include_traceback)
 
-    def log_info(self, text, include_traceback=False):
+    def log_info(self, text="", include_traceback=False):
         self.__log(_LogLevel.INFO, text, include_traceback)
 
-    def log_warn(self, text, include_traceback=False):
+    def log_warn(self, text="", include_traceback=False):
         self.__log(_LogLevel.WARN, text, include_traceback)
 
-    def log_error(self, text, include_traceback=False):
+    def log_error(self, text="", include_traceback=False):
         self.__log(_LogLevel.ERROR, text, include_traceback)
 
-    def log_critical(self, text, include_traceback=False):
+    def log_critical(self, text="", include_traceback=False):
         self.__log(_LogLevel.CRITICAL, text, include_traceback)
 
-    def log_fatal(self, text, include_traceback=False):
+    def log_fatal(self, text="", include_traceback=False):
         self.__log(_LogLevel.FATAL, text, include_traceback)

@@ -1,14 +1,14 @@
-import generator.basic.BinGenerator as binbase
-import generator.constant as consts
+from generator.basic.BinGenerator import BinGenerator
 
 
-def get_sequence(length=consts.default_length):
-    """
-    Generates sequence of order direction ids.
-    :param length: length of sequence
-    """
-    try:
-        for i in binbase.get_sequence(length=length):
-            yield i
-    except Exception as ex:
-        raise ex
+class DirectionGenerator(BinGenerator):
+    def get_sequence(self, length, x, y):
+        """
+        Generates sequence of order direction ids.
+        :param length: length of sequence
+        """
+        try:
+            for i in super(DirectionGenerator, self).get_sequence(length, x, y):
+                yield i
+        except Exception as ex:
+            raise ex

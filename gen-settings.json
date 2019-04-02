@@ -1,63 +1,27 @@
 {
-    "1-state_percent": {
-        "Blue": 0.6,
-        "Red": 0.4
+    "a": 7,
+    "c": 3,
+    "currency_pairs": {
+        "AUD/USD": 1.12326,
+        "EUR/AUD": 0.97051,
+        "EUR/CAD": 0.88199,
+        "EUR/GBP": 1.07979,
+        "EUR/JPY": 0.83608,
+        "EUR/NZD": 1.14843,
+        "EUR/USD": 1.21585,
+        "GBP/CHF": 1.15967,
+        "GBP/JPY": 0.93516,
+        "GBP/NZD": 1.09904,
+        "GBP/USD": 1.0743,
+        "JPY/NZD": 1.20828,
+        "NZD/USD": 1.11443,
+        "USD/CAD": 1.23045,
+        "USD/CHF": 0.91036,
+        "USD/JPY": 0.89857
     },
-    "a_default": 7,
-    "c_default": 3,
-    "currency_pairs": [
-        {
-            "EUR/USD": 1.21585
-        },
-        {
-            "GBP/USD": 1.0743
-        },
-        {
-            "USD/JPY": 0.89857
-        },
-        {
-            "USD/CHF": 0.91036
-        },
-        {
-            "USD/CAD": 1.23045
-        },
-        {
-            "AUD/USD": 1.12326
-        },
-        {
-            "NZD/USD": 1.11443
-        },
-        {
-            "EUR/GBP": 1.07979
-        },
-        {
-            "EUR/AUD": 0.97051
-        },
-        {
-            "GBP/JPY": 0.93516
-        },
-        {
-            "EUR/JPY": 0.83608
-        },
-        {
-            "EUR/CAD": 0.88199
-        },
-        {
-            "GBP/CHF": 1.15967
-        },
-        {
-            "EUR/NZD": 1.14843
-        },
-        {
-            "GBP/NZD": 1.09904
-        },
-        {
-            "JPY/NZD": 1.20828
-        }
-    ],
-    "date": 1551339308579,
+    "date": 1551339308546,
     "days_amount": 5,
-    "default_length": 1024,
+    "default_length": 2000,
     "descriptions": [
         "Descrription0",
         "Descrription1",
@@ -80,7 +44,12 @@
         "Buy",
         "Sell"
     ],
-    "m_default": 32768,
+    "id_length": 20,
+    "m": 32768,
+    "one_state_percent": {
+        "Blue": 0.6,
+        "Red": 0.4
+    },
     "orders_amount": 200,
     "portion_amount": 100,
     "price_precision": 5,
@@ -91,7 +60,7 @@
         "Partial filled",
         "Filled"
     ],
-    "t0_default": 1,
+    "t0": 1,
     "tags": [
         "Tag0",
         "Tag1",
@@ -115,8 +84,8 @@
         0,
         6
     ],
-    "x_default": 12,
-    "y_default": 23,
+    "x": 12,
+    "y": 23,
     "zones": [
         "Red",
         "Green",

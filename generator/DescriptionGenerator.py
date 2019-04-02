@@ -1,14 +1,19 @@
-import generator.basic.IntGenerator as intbase
-import generator.constant as consts
+from generator.basic.IntGenerator import IntGenerator
 
 
-def get_sequence(length=consts.default_length):
-    """
-    Generates sequence of description ids.
-    :param length: length of sequence
-    """
-    try:
-        for i in intbase.get_sequence(length=length, min=0, max=len(consts.descriptions) - 1):
-            yield i
-    except Exception as ex:
-        raise ex
+class DescriptionGenerator(IntGenerator):
+    def __init__(self, logger, descriptions_amount):
+        super(DescriptionGenerator, self).__init__(logger)
+        self.descriptions_amount = descriptions_amount
+
+    def get_sequence(self, length, x, y, a, c, m, t0, min=0, max=1):
+        """
+        Generates sequence of description ids.
+        :param length: length of sequence
+        """
+        try:
+            for i in super(DescriptionGenerator, self).get_sequence(
+                    min, self.descriptions_amount, length, x, y, a, c, m, t0):
+                yield i
+        except Exception as ex:
+            raise ex

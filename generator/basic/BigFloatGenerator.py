@@ -1,15 +1,9 @@
 import generator.basic as genbase
-import generator.constant as consts
 from generator.basic.Generator import Generator
 
 
 class BigFloatGenerator(Generator):
-    def __init__(self, logger):
-        self.__logger = logger
-
-    def get_sequence(self, min=-consts.default_length, max=consts.default_length, length=consts.default_length,
-                     x=consts.x_default, y=consts.y_default,
-                     a=consts.a_default, c=consts.c_default, m=consts.m_default, t0=consts.t0_default):
+    def get_sequence(self, min, max, length, x, y, a, c, m, t0):
         """
         Generates sequence of float numbers.
         :param min: range of numbers
@@ -21,13 +15,13 @@ class BigFloatGenerator(Generator):
             raise IndexError
 
         sequence_debug_id = "[{}{}{}{}{}{}{}{}{}]".format(length, min, max, x, y, a, c, m, t0)
-        self.__logger.log_trace("Generating sequence of BigFloats:{}".format(sequence_debug_id))
+        self._logger.log_trace("Generating sequence of BigFloats:{}".format(sequence_debug_id))
         try:
             for i in genbase.get_adv_sequence(x, y, a, c, m, t0, length):
                 i = self._gen_next_number(i, min, max)
-                self.__logger.log_trace("[BigFloat]{}:{}".format(sequence_debug_id, i))
+                self._logger.log_trace("[BigFloat]{}:{}".format(sequence_debug_id, i))
                 yield i
-            self.__logger.log_trace("Sequence of Bins:{} was generated".format(sequence_debug_id))
+            self._logger.log_trace("Sequence of Bins:{} was generated".format(sequence_debug_id))
         except Exception as ex:
             raise ex
 
