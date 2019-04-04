@@ -9,26 +9,27 @@ class MySQLService(DataBase):
         :param keep_connection_open:
         Keep connection open or open/close after each query
         """
-        self.connection = connection
-        self.keep_connection_open = keep_connection_open
-        self.logger = logger
+        self.__connection = connection
+        self.__keep_connection_open = keep_connection_open
+        self._logger = logger
+
+        self.__connection.try_open()
 
     def execute_query(self, query, params=None):
         try:
-            if not self.connection.instance.is_connected():
-                self.connection.instance.open()
+            if self.__connection.is_connected():
 
-            connector = self.connection.instance
+                connector = self.__connection.get_instance()
 
-            cursor = connector.cursor()
+                cursor = connector.cursor()
 
-            cursor.execute(query)
+                cursor.execute(query)
 
-            connector.commit()
+                connector.commit()
 
-            cursor.close()
+                cursor.close()
 
-            if not self.keep_connection_open:
-                connector.close()
+                if not self.__keep_connection_open:
+                    connector.close()
         except Exception as ex:
-            self.logger.log_error("{} occupied while executing query:\n{}".format(str(ex), query), include_traceback=True)
+            self._logger.log_error("{} occupied while executing query:\n{}".format(str(ex), query))

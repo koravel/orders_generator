@@ -4,7 +4,6 @@ from config.provider import PathKeys
 from config.provider import GenSettingsKeys
 from config.provider import SettingsKeys
 from config.Config import Config
-from generator.OrderConstructor import OrderConstructor
 from generator.OrderRecordConstructor import OrderRecordConstructor
 from logging.LogDistributorBuilder import LogDistributorBuilder
 from logging.Logger import Logger
@@ -90,7 +89,7 @@ class App:
         return orders
 
     @staticmethod
-    def to_mysql(config, logger, orders):
+    def to_mysql(config, logger, order_records):
         mysql_service = OrderMySQLService(MySQLConnection(
             host=config.settings[SettingsKeys.mysql][SettingsKeys.host],
             port=config.settings[SettingsKeys.mysql][SettingsKeys.port],
@@ -102,31 +101,30 @@ class App:
             keep_connection_open=True,
             logger=logger
         )
-        for order in orders:
+        for order_record in order_records:
             params = {
-                "fields":{
-                    "order_id",
-                    "timestamp",
-                    "currency_pair",
-                    "order_direction",
-                    "init_price",
-                    "fill_price",
-                    "init_volume",
-                    "fill_volume",
-                    "description",
-                    "tags"
-                },
-                "values":{
-                    order.id
-                    }
-            }
+                "id": order_record.get_id(),
+                "order_id": order_record.order.get_id(),
+                "status": order_record.get_status(),
+                "timestamp": order_record.get_timestamp(),
+                "currency_pair": order_record.order.get_currency_pair(),
+                "direction": order_record.order.get_direction(),
+                "init_price": order_record.order.get_init_price(),
+                "fill_price": order_record.get_fill_price(),
+                "init_volume": order_record.order.get_init_volume(),
+                "fill_volume": order_record.get_fill_volume(),
+                "tags": order_record.order.get_tags(),
+                "description": order_record.order.get_description()
+                }
+
             mysql_service.insert(config.settings[SettingsKeys.mysql][SettingsKeys.order_table], params)
+
+    @staticmethod
+    def to_rabbitmq(config, logger, order_records):
+        pass
 
     @staticmethod
     def finalize(config, path_provider, settings_provider, gen_settings_provider):
         path_provider.save(config.pathes)
         settings_provider.save(config.settings)
         gen_settings_provider.save(config.gen_settings)
-
-    # @staticmethod
-    # def __get_out_file_name():

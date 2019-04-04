@@ -1,7 +1,7 @@
 class OrderRecord:
     def __init__(self, id, order, status, timestamp, fill_price=None, fill_volume=None):
         self.__id = id
-        self.__order = order
+        self.order = order
         self.__status = status
         self.__timestamp = timestamp
 
@@ -15,6 +15,15 @@ class OrderRecord:
         else:
             self.__fill_volume = fill_volume
 
+    def get_status(self):
+        return self.__status
+
+    def get_id(self):
+        return self.__id
+
+    def get_timestamp(self):
+        return self.__timestamp
+
     def get_fill_price(self):
         return self.__fill_price
 
@@ -27,8 +36,5 @@ class OrderRecord:
     def set_fill_volume(self, value):
         self.__fill_volume = value
 
-    def get_status(self):
-        return self.__status
-
     def __str__(self):
-        return "{},{},{},{},{},{}".format(str(self.__order), self.__fill_price, self.__fill_volume, self.__status, self.__timestamp, self.__id)
+        return "{},{},{},{},{},{}".format(str(self.order), self.__fill_price, self.__fill_volume, self.__status, self.__timestamp, self.__id)

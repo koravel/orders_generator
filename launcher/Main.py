@@ -10,20 +10,27 @@ class Main:
 
     @staticmethod
     def initialize():
-        Main.config, Main.logger, Main.path_provider, Main.settings_provider, Main.gen_settings_provider = App.initialize()
+        Main.config, \
+        Main.logger, \
+        Main.path_provider, \
+        Main.settings_provider, \
+        Main.gen_settings_provider = App.initialize()
 
 
     @staticmethod
     def run():
-        orders = App.generate(Main.config, Main.logger)
+        order_records = App.generate(Main.config, Main.logger)
 
         from datetime import datetime
         file_name = "{}.out".format(datetime.now().replace(microsecond=0)).replace(":", "_")
 
-        App.to_file(Main.config, orders, file_name)
+        App.to_file(Main.config, order_records, file_name)
 
-        App.from_file(Main.config, file_name)
+        order_records = App.from_file(Main.config, file_name)
 
+        App.to_mysql(Main.config, Main.logger, order_records)
+
+        App.to_rabbitmq(Main.config, Main.logger, order_records)
     @staticmethod
     def finalize():
         App.finalize(Main.config, Main.path_provider, Main.settings_provider, Main.gen_settings_provider)

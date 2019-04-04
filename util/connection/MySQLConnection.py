@@ -1,5 +1,5 @@
 import time
-import mysql.connector
+from mysql import connector
 
 from util.connection.ServiceConnection import ServiceConnection
 import util.connection as uc
@@ -9,13 +9,16 @@ import util.connection as uc
 class MySQLConnection(ServiceConnection):
     def __init__(self, host, port, db, logger, user, password=''):
         self.__host = host
-        self.__port = port,
+        self.__port = port
         self.__db = db
         self.__user = user
         self.__password = password
         self.__logger = logger
 
-    def try_open(self, attempts, delay):
+    def get_instance(self):
+        return self.__instance
+
+    def try_open(self, attempts=3, delay=0.5):
         retry_amount_left = attempts
         connection_established = False
 
@@ -32,35 +35,43 @@ class MySQLConnection(ServiceConnection):
         retry_time = retry_amount * delay
 
         if connection_established:
-            self.__logger.log_info(uc.__connection_result_text.format(
-                "established", retry_amount, retry_time, self.__connection_params_to_str()))
+            self.__logger.log_info(uc.connection_result_text.format("MySQL", "established",
+                                                                    retry_amount, retry_time,
+                                                                    self.__connection_params_to_str()))
             return True
         else:
-            self.__logger.log_error(uc.__connection_result_text.format(
-                "failed", retry_amount, retry_time, self.__connection_params_to_str()))
-            return False
+            self.__logger.log_error(uc.connection_result_text.format("MySQL", "failed",
+                                                                    retry_amount, retry_time,
+                                                                    self.__connection_params_to_str()))
+            raise Exception
 
     def open(self):
         try:
-            self.__instance.disconnect()
-            self.__instance = mysql.connector.connect(
+            if hasattr(self, "__instance"):
+                self.__instance.disconnect()
+
+            self.__instance = connector.connect(
                 host=self.__host,
                 port=self.__port,
                 database=self.__db,
                 user=self.__user,
-                password=self.__password
-            )
-        except:
-            raise ConnectionError("Failed to connect with params:\n{}".format(self.__connection_params_to_str()))
+                password=self.__password,
+                auth_plugin='mysql_native_password')
+        except Exception as ex:
+            self.__logger.log_error(str(ex))
+            raise ConnectionError("Failed to connect with params:\n[{}]".format(self.__connection_params_to_str()))
 
     def close(self):
         if self.__instance is not None:
             self.__instance.close()
 
     def __connection_params_to_str(self):
-        return uc.__get_connection_params_text(
+        return uc.get_connection_params_text(
             ["host", self.__host, "port", self.__port, "db", self.__db, "user", self.__user, "password",
              self.__password])
 
     def is_connected(self):
-        return self.__instance.is_connected()
+        try:
+            return self.__instance.is_connected()
+        except:
+            raise ConnectionError("Connection is not opened")

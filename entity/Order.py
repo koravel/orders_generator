@@ -11,6 +11,21 @@ class Order:
         self.__init_price = init_price
         self.__init_volume = init_volume
 
+    def get_id(self):
+        return self.__id
+
+    def get_currency_pair(self):
+        return self.__currency_pair
+
+    def get_direction(self):
+        return self.__direction
+
+    def get_description(self):
+        return self.__description
+
+    def get_tags(self):
+        return self.__tags
+
     def get_init_price(self):
         return self.__init_price
 
@@ -20,14 +35,14 @@ class Order:
     def get_initial_timestamp(self):
         return self.__initial_timestamp
 
+    def get_position(self):
+        return self.__position
+
     def set_initial_timestamp(self, value):
         self.__initial_timestamp = value
 
     def set_position(self, value):
         self.__position = value
-
-    def get_position(self):
-        return self.__position
 
     def __str__(self):
         return "{},{},{},{},{},{},{}".format(

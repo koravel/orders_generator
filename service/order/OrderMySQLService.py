@@ -11,7 +11,18 @@ class OrderMySQLService(MySQLService, CRUD):
         :param params: Dictionary<field, value>
         :return:
         """
-        super().execute_query("insert into {} ({}) values({});".format(location, params.keys(), params.values()))
+        fields = ""
+        values = ""
+        for k, v in params.items():
+            fields += "{},".format(k)
+            if isinstance(v, str):
+                values += '\'{}\','.format(v)
+            else:
+                values += "{},".format(v)
+
+        query = "insert into {} ({}) values({});".format(location, fields[:-1], values[:-1])
+
+        super().execute_query(query)
 
     def update(self, location, params, conditions):
         set_text = ""

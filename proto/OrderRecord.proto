@@ -1,0 +1,19 @@
+syntax = "proto2";
+
+package tutorial;
+
+message OrderRecord
+{
+    required int64 id = 1;
+    required string cur_pair = 2;
+    required string direction = 3;
+    required string status = 4;
+    required int64 datetime = 5;
+    required double init_px = 6;
+    required double init_volume = 7;
+    required double fill_px = 8;
+    required double fill_volume = 9;
+    required string desc = 10;
+    required string tags = 11;
+    required int32 zone = 12;
+}

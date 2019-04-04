@@ -26,8 +26,8 @@
         "database": "test",
         "host": "127.0.0.1",
         "keep_connection_open": false,
-        "order_table": "order_notes",
-        "password": "lazarus00",
+        "order_table": "order_records",
+        "password": "root",
         "port": "3306",
         "user": "root"
     },
