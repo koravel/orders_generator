@@ -53,7 +53,7 @@ class SettingsKeys:
     cache_message_lifetime = "cache_message_lifetime"
     enable_cache = "enable_cache"
     exchange = "exchange"
-    #host = ""
+    vhost = "vhost"
     mysql_table = "mysql_table"
     routing_key = "routing_key"
 

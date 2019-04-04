@@ -44,7 +44,7 @@
         "Buy",
         "Sell"
     ],
-    "id_length": 20,
+    "id_length": 16,
     "m": 32768,
     "one_state_percent": {
         "Blue": 0.6,

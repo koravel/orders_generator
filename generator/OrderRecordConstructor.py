@@ -1,5 +1,4 @@
 from datetime import datetime
-from math import floor
 
 from config.provider import GenSettingsKeys
 from entity.OrderRecord import OrderRecord
@@ -89,7 +88,7 @@ class OrderRecordConstructor:
             initial_timestamp += date_additive
         return initial_timestamp
 
-    def __generate_status_data(self, status, order):
+    def __generate_status_data(self, status, order, zone):
         """
         Creates order with status and status date, adds to order data
         """
@@ -106,7 +105,8 @@ class OrderRecordConstructor:
             result = OrderRecord(id=self.order_record_id_generator.__next__(),
                                  order=order,
                                  timestamp=timestamp,
-                                 status=status)
+                                 status=status,
+                                 zone=zone)
         except Exception as ex:
             raise ex
         else:
@@ -150,9 +150,9 @@ class OrderRecordConstructor:
         """
         try:
             result = []
-            result.append(self.__generate_status_data(self.last_status_generator.__next__(), order))
+            result.append(self.__generate_status_data(self.last_status_generator.__next__(), order, "red"))
             if order.get_position() > self.one_state_red_finish:
-                result.append(self.__generate_status_data(self.__statuses[1], order))
+                result.append(self.__generate_status_data(self.__statuses[1], order, "red"))
         except Exception as ex:
             raise ex
         else:
@@ -166,7 +166,7 @@ class OrderRecordConstructor:
             result = []
             i = 0
             while i < 3:
-                result.append(self.__generate_status_data(self.__statuses[i], order))
+                result.append(self.__generate_status_data(self.__statuses[i], order, "green"))
                 i += 1
         except Exception as ex:
             raise ex
@@ -182,9 +182,9 @@ class OrderRecordConstructor:
         """
         try:
             result = []
-            result.append(self.__generate_status_data(self.__statuses[0], order))
+            result.append(self.__generate_status_data(self.__statuses[0], order, "blue"))
             if order.get_position() <= self.one_state_blue_start:
-                result.append(self.__generate_status_data(self.__statuses[1], order))
+                result.append(self.__generate_status_data(self.__statuses[1], order, "blue"))
         except Exception as ex:
             raise ex
         else:

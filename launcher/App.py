@@ -4,16 +4,19 @@ from config.provider import PathKeys
 from config.provider import GenSettingsKeys
 from config.provider import SettingsKeys
 from config.Config import Config
+from converter.OrderRecordToProto import OrderRecordToProto
 from generator.OrderRecordConstructor import OrderRecordConstructor
-from logging.LogDistributorBuilder import LogDistributorBuilder
-from logging.Logger import Logger
+from llogging.LogDistributorBuilder import LogDistributorBuilder
+from llogging.Logger import Logger
 from config.provider.SettingsProvider import SettingsProvider
 from config.provider.PathProvider import PathProvider
 from service.file.FileWriteService import FileWriteService
+from service.message_broker.rabbitmq.RabbitMQService import RabbitMQService
 from service.order.OrderRecordFileReadService import OrderFileReadService
 from service.order.OrderMySQLService import OrderMySQLService
 from util import delete_excess_files
 from util.connection.MySQLConnection import MySQLConnection
+from util.connection.RabbitMQConnection import RabbitMQConnection
 
 
 class App:
@@ -120,8 +123,77 @@ class App:
             mysql_service.insert(config.settings[SettingsKeys.mysql][SettingsKeys.order_table], params)
 
     @staticmethod
-    def to_rabbitmq(config, logger, order_records):
-        pass
+    def to_proto(order_records):
+        protos = []
+        for order_record in order_records:
+            protos.append(OrderRecordToProto.convert(order_record))
+
+        return protos
+
+    @staticmethod
+    def to_rabbitmq(config, logger, proto_records):
+        rabbitmq = RabbitMQService(connection=RabbitMQConnection(
+            host=config.settings[SettingsKeys.rabbit][SettingsKeys.host],
+
+            vhost=config.settings[SettingsKeys.rabbit][SettingsKeys.vhost],
+            user=config.settings[SettingsKeys.rabbit][SettingsKeys.user],
+            password=config.settings[SettingsKeys.rabbit][SettingsKeys.password],
+            logger=logger
+        ),
+            logger=logger)
+
+        rabbitmq.declare_queue("red")
+        rabbitmq.declare_queue("green")
+        rabbitmq.declare_queue("blue")
+
+        rabbitmq.declare_router("proto_exchange", "direct")
+
+        rabbitmq.bind_queue("red", "proto_exchange", "red")
+        rabbitmq.bind_queue("green", "proto_exchange", "green")
+        rabbitmq.bind_queue("blue", "proto_exchange", "blue")
+
+        for record in proto_records:
+            rabbitmq.send_message("proto_exchange", record.zone, record.SerializeToString())
+
+    @staticmethod
+    def report(logger, timings, proto_records):
+
+        zone_counts = {
+            "red": 0,
+            "green": 0,
+            "blue": 0,
+        }
+
+        for record in proto_records:
+            if record.zone == "red":
+                zone_counts["red"] += 1
+            elif record.zone == "green":
+                zone_counts["green"] += 1
+            elif record.zone == "blue":
+                zone_counts["blue"] += 1
+
+        logger.log_info("\n=======REPORT=======\n"
+                        "Order records in:\n"
+                        "Red zone:{}\n"
+                        "Green zone:{}\n"
+                        "Blue zone:{}\n"
+                        "Setup time:{}\n"
+                        "Generation time:{}\n"
+                        "Write to file time:{}\n"
+                        "Read from file time:{}\n"
+                        "Write to MySQL DB time:{}\n"
+                        "Convert to proto time:{}\n"
+                        "Send to RabbitMQ time:{}\n"
+                        "\n=====END=REPORT=====\n"
+                        .format(zone_counts["red"], zone_counts["green"], zone_counts["blue"],
+                                timings["setup"],
+                                timings["gen"],
+                                timings["to_file"],
+                                timings["from_file"],
+                                timings["mysql"],
+                                timings["proto"],
+                                timings["rabbit"]
+                                ))
 
     @staticmethod
     def finalize(config, path_provider, settings_provider, gen_settings_provider):

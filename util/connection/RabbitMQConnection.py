@@ -7,9 +7,9 @@ from util.connection.ServiceConnection import ServiceConnection
 
 
 class RabbitMQConnection(ServiceConnection):
-    def __init__(self, host, port, vhost, user, password, logger, retry_amount=0, retry_timeout=0):
+    def __init__(self, host, vhost, user, password, logger, retry_amount=0, retry_timeout=0):
         self.__host = host
-        self.__port = port
+        #self.__port = port
         self.__vhost = vhost
         self.__user = user
         self.__password = password
@@ -22,11 +22,11 @@ class RabbitMQConnection(ServiceConnection):
             credentials = pika.PlainCredentials(self.__user, self.__password)
             self.instance = pika.BlockingConnection(
                 pika.ConnectionParameters(
-                    host=self.__host, virtual_host=self.__vhost, port=self.__port, credentials=credentials,
-                    connection_attempts=self.__retry_amount, socket_timeout=self.__retry_timeout))
+                    host=self.__host, virtual_host=self.__vhost, credentials=credentials))
+                    #connection_attempts=self.__retry_amount, socket_timeout=self.__retry_timeout))
         except:
             self.__logger.log_error(traceback.format_exc())
-        self.__logger.log_info("RabbitMQ connection established")
+        self.__logger.log_debug("RabbitMQ connection established")
 
     def close(self):
         if self.instance is not None:

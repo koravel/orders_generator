@@ -2,7 +2,7 @@ import abc
 import traceback
 from datetime import datetime
 
-from logging import _LogLevel
+from llogging import _LogLevel
 import util.TextConstants as tconst
 
 

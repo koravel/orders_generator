@@ -36,8 +36,10 @@
         "enable_cache": false,
         "exchange": "",
         "host": "localhost",
-        "mysql_table": "order_notes_rabbit",
-        "routing_key": "order_notes"
+        "password": "guest",
+        "routing_key": "order_notes",
+        "user": "guest",
+        "vhost": "/"
     },
     "system": {
         "limited_therads": false,

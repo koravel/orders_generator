@@ -1,6 +1,6 @@
 import os
 
-from logging.BaseLogger import BaseLogger
+from llogging.BaseLogger import BaseLogger
 from service.file.FileWriteService import FileWriteService
 
 

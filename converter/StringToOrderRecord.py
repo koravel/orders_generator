@@ -25,7 +25,8 @@ class StringToOrderRecord:
             status=fields[9],
             timestamp=fields[10],
             fill_price=fields[7],
-            fill_volume=fields[8]
+            fill_volume=fields[8],
+            zone=fields[12]
         )
 
         if order.get_initial_timestamp() is None or order.get_initial_timestamp() > fields[10]:
