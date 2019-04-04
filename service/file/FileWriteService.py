@@ -29,7 +29,7 @@ class FileWriteService(FileService):
     def _write(obj, obj_location, mode):
         try:
             with FileWriteService._open(obj_location, mode) as file_stream:
-                file_stream.write(str(obj))
+                file_stream.write("{}\n".format(str(obj)))
         except Exception as ex:
             raise ex
 

@@ -4,37 +4,26 @@ from service.database.mysql.MySQLService import MySQLService
 
 class OrderMySQLService(MySQLService, CRUD):
     __separator = ','
-    """
-    Params format: Dictronary
-    {
-        [fields]: Array{...},
-        [values]: Array{...},
-        [reducers]: Array{...}
-    }
-    """
+
     def insert(self, location, params):
-        fields = self.__separator.join(params["fields"])
-        values = self.__separator.join(params["values"])
+        """
+        :param location: Order table
+        :param params: Dictionary<field, value>
+        :return:
+        """
+        super().execute_query("insert into {} ({}) values({});".format(location, params.keys(), params.values()))
 
-        super().execute_query("insert into {} ({}) values({});".format(location, fields, values))
-
-    def update(self, location, params):
-
+    def update(self, location, params, conditions):
         set_text = ""
-        where_text = self.__separator.join(params["reducers"])
-        i = 0
-        while i < len(params["fields"] / 2):
-            set_text += "{}={}".format(params["fields"][i], params["values"][i])
 
-        super().execute_query("update {} set {} where {};".format(location, set_text, where_text))
+        for k, v in params:
+            set_text += "{}={}".format(k, v)
 
-    def delete(self, location, params):
-        where_text = self.__separator.join(params["reducers"])
+        super().execute_query("update {} set {} where {};".format(location, set_text, conditions))
 
-        super().execute_query("delete from {} where {};".format(location, where_text))
+    def delete(self, location, conditions):
+        super().execute_query("delete from {} where {};".format(location, conditions))
 
-    def select(self, location, params):
-        fields = self.__separator.join(params["fields"])
-        where_text = self.__separator.join(params["reducers"])
+    def select(self, location, params, conditions):
 
-        super().execute_query("select {} from {} where {};".format(location, fields, where_text))
+        super().execute_query("select {} from {} where {};".format(location, params, conditions))

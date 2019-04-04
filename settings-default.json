@@ -2,6 +2,7 @@
     "mysql": {
         "database": "test",
         "host": "127.0.0.1",
+        "port": "3306",
         "keep_connection_open": false,
         "order_table": "order_notes",
         "password": "lazarus00",
@@ -15,10 +16,30 @@
         "mysql_table": "order_notes_rabbit",
         "routing_key": "order_notes"
     },
+    "logging": {
+        "loggers": [
+            {
+                "type": "console",
+                "destination":"",
+                "is_enabled": true,
+                "log_level": 6
+            },
+            {
+                "type": "folder",
+                "destination":"../log",
+                "log_level": 6,
+                "is_enabled": true
+            },
+            {
+                "type": "file",
+                "destination":"../loq/out.txt",
+                "log_level": 7,
+                "is_enabled": false
+            }
+        ]
+    },
     "system": {
         "limited_therads": false,
-        "log_level": 6,
-        "logger_files_max": 10,
         "out_files_max": 10,
         "threads_max": 10
     }

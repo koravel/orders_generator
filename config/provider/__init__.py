@@ -41,6 +41,7 @@ class SettingsKeys:
 
     database = "database"
     host = "host"
+    port = "port"
     keep_connection_open = "keep_connection_open"
     order_table = "order_table"
     password = "password"
@@ -60,7 +61,9 @@ class SettingsKeys:
     system = "system"
 
     limited_therads = "limited_therads"
-    log_level = "log_level"
-    logger_files_max = "logger_files_max"
     out_files_max = "out_files_max"
     threads_max = "threads_max"
+
+    logging = "logging"
+    logger_files_max = "logger_files_max"
+    loggers = "loggers"

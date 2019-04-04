@@ -1,5 +1,3 @@
-import traceback
-
 from service.database.DataBase import DataBase
 
 
@@ -15,42 +13,22 @@ class MySQLService(DataBase):
         self.keep_connection_open = keep_connection_open
         self.logger = logger
 
-    def execute_query_with_params(self, query, params=[]):
+    def execute_query(self, query, params=None):
         try:
-            if self.keep_connection_open:
-                if not self.connection.instance.is_connected():
-                    self.connection.instance.open()
-            else:
+            if not self.connection.instance.is_connected():
                 self.connection.instance.open()
 
-            connection = self.connection.instance
+            connector = self.connection.instance
 
-            cursor = connection.cursor()
-
-            cursor.execute(query, params)
-
-            connection.commit()
-
-            cursor.close()
-        except:
-            self.logger.log_error(traceback.format_exc())
-
-    def execute_query(self, query):
-        try:
-            if self.keep_connection_open:
-                if not self.connection.instance.is_connected():
-                    self.connection.instance.open()
-            else:
-                self.connection.instance.open()
-
-            connection = self.connection.instance
-
-            cursor = connection.cursor()
+            cursor = connector.cursor()
 
             cursor.execute(query)
 
-            connection.commit()
+            connector.commit()
 
             cursor.close()
-        except:
-            self.logger.log_error(traceback.format_exc())
+
+            if not self.keep_connection_open:
+                connector.close()
+        except Exception as ex:
+            self.logger.log_error("{} occupied while executing query:\n{}".format(str(ex), query), include_traceback=True)

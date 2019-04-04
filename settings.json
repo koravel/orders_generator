@@ -1,10 +1,34 @@
 {
+    "logging": {
+        "logger_files_max": 10,
+        "loggers": [
+            {
+                "destination": "",
+                "is_enabled": true,
+                "log_level": 6,
+                "type": "console"
+            },
+            {
+                "destination": "../log",
+                "is_enabled": true,
+                "log_level": 6,
+                "type": "folder"
+            },
+            {
+                "destination": "../loq/out.txt",
+                "is_enabled": false,
+                "log_level": 7,
+                "type": "file"
+            }
+        ]
+    },
     "mysql": {
         "database": "test",
         "host": "127.0.0.1",
         "keep_connection_open": false,
         "order_table": "order_notes",
         "password": "lazarus00",
+        "port": "3306",
         "user": "root"
     },
     "rabbit": {
@@ -17,8 +41,6 @@
     },
     "system": {
         "limited_therads": false,
-        "log_level": 6,
-        "logger_files_max": 10,
         "out_files_max": 10,
         "threads_max": 10
     }

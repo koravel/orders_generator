@@ -16,7 +16,13 @@ class Main:
     @staticmethod
     def run():
         orders = App.generate(Main.config, Main.logger)
-        App.to_file(Main.config, orders)
+
+        from datetime import datetime
+        file_name = "{}.out".format(datetime.now().replace(microsecond=0)).replace(":", "_")
+
+        App.to_file(Main.config, orders, file_name)
+
+        App.from_file(Main.config, file_name)
 
     @staticmethod
     def finalize():

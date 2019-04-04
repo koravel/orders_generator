@@ -2,7 +2,7 @@ import json
 
 
 # override JSON encoder for PathProvider data structure
-from config.Path import Path
+from config.provider.Path import Path
 
 
 class PathEncoder(json.JSONEncoder):

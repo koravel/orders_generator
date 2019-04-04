@@ -8,7 +8,7 @@ class LastStatusGenerator(IntGenerator):
         :param length: length of sequence
         """
         try:
-            for i in super(LastStatusGenerator, LastStatusGenerator).get_sequence(
+            for i in super(LastStatusGenerator, self).get_sequence(
                     length=length, min=min, max=max, x=x, y=y, a=a, c=c, m=m, t0=t0):
                 yield statuses[i + 2]
         except Exception as ex:
