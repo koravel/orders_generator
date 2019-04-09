@@ -9,13 +9,13 @@
                 "type": "console"
             },
             {
-                "destination": "../log",
+                "destination": "./log",
                 "is_enabled": true,
                 "log_level": 6,
                 "type": "folder"
             },
             {
-                "destination": "../loq/out.txt",
+                "destination": "./loq/out.txt",
                 "is_enabled": false,
                 "log_level": 7,
                 "type": "file"
@@ -23,21 +23,23 @@
         ]
     },
     "mysql": {
+        "connection_attempts": 3,
+        "connection_attempts_delay": 0.5,
         "database": "test",
         "host": "127.0.0.1",
-        "keep_connection_open": false,
+        "instant_connection_attempts": true,
+        "keep_connection_open": true,
         "order_table": "order_records",
         "password": "root",
         "port": "3306",
         "user": "root"
     },
     "rabbit": {
-        "cache_message_lifetime": 10,
         "enable_cache": false,
-        "exchange": "",
         "host": "localhost",
+        "message_ttl": 10,
         "password": "guest",
-        "routing_key": "order_notes",
+        "port": "5672",
         "user": "guest",
         "vhost": "/"
     },

@@ -10,7 +10,7 @@ class Provider:
 
     @staticmethod
     @abc.abstractmethod
-    def load(read_method):
+    def load(read_method, load_default=False):
         raise NotImplementedError(tconst.not_implemented_text.format("load"))
 
     @staticmethod

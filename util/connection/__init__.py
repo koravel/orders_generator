@@ -8,4 +8,4 @@ def get_connection_params_text(params):
     while i < len(params):
         result += param_text.format(params[i], params[i + 1])
         i += 2
-    return result
+    return "[{}]".format(result)

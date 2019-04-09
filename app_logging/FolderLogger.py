@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from llogging.BaseLogger import BaseLogger
+from app_logging.BaseLogger import BaseLogger
 from service.file.FileWriteService import FileWriteService
 
 

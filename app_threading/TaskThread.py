@@ -24,16 +24,19 @@ class TaskThread(threading.Thread):
 
     def run(self):
         self.start_time = datetime.now().timestamp()
-        self.__logger.log_info("Run thread {}")
+        self.__logger.log_info("Run thread {}".format(self.name))
 
         events = self.__events
-        events.update(self.__thread_pool.__global_events)
+        if events is not None:
+            events.update(self.__thread_pool.__global_events)
+
         data = self.__data
-        events.update(self.__thread_pool.__global_data)
+        if data is not None:
+            data.update(self.__thread_pool.__global_data)
 
         self._task(events=events, data=data, logger=self.__logger)
 
-        self.__logger.log_info("Close thread after {} sec".format(datetime.now().timestamp() - self.start_time))
+        self.__logger.log_info("Close thread {} after {} sec".format(self.name, datetime.now().timestamp() - self.start_time))
 
     def set_event(self, name):
         if self.__events[name] is not None:

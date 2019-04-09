@@ -12,12 +12,12 @@ class SettingsProvider(Provider):
         else:
             self.__log_info("Successfully saved settings to {}".format(self.location))
 
-    def load(self, read_method=JSONReadService.read):
+    def load(self, read_method=JSONReadService.read, load_default=False):
         settings = dict()
         try:
             settings = read_method(self.location)
         except:
-            if self.default_location is not None:
+            if self.default_location is not None and load_default:
                 self.__log_error("Cannot load settings from {}. Try to load default file...".format(self.location))
                 settings = self.__load_defaults(read_method)
         else:

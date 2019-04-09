@@ -13,7 +13,7 @@ Zone distribution:
 - Green - all 1-5.
 - Blue - only 1-2.
 
-More detailed info will be added later. 
+More detailed info will be added later.  
  
 # Requirements
 * Python and packages:
@@ -25,36 +25,23 @@ More detailed info will be added later.
 * rabbitmq 3.7.13
 
 # Usage details
-1. DB and tables name:
-```
-create table order_records(
-id decimal(20) unsigned NOT NULL,
-order_id decimal(20) unsigned NOT NULL,
-timestamp decimal(20) unsigned NOT NULL,
-status char(16) NOT NULL,
-currency_pair char(16) NOT NULL,
-direction char(16) NOT NULL,
-init_price float(6,5) NOT NULL,
-fill_price float(6,5) NOT NULL,
-init_volume float(13,8) NOT NULL,
-fill_volume float(13,8) NOT NULL,
-tags tinytext default null,
-description text default null
-)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+1. If app moved to another PC and pathes to settings, log folder etc. is not remote, delete pathes.json to re-initialize it
 
-```
-2. If app moved to another PC and pathes to settings, log folder etc. is not remote, delete pathes.json to re-initialize it
+2. Do not delete root.py - file indicates root of app to all components
 
-3. Do not delete root.py - file indicates root of app to all components
+3. If settings.json empty or not presented, settings-default.json is used insead
 
 4. If settings.json empty or not presented, settings-default.json is used insead
-
-5. If settings.json empty or not presented, settings-default.json is used insead
 
 # How to launch
 
 1. Create MySQL table from file ./init.sql
-2. Download required python packages by requirements.txt or by command line with pip:
+2. Download required python packages by requirements.txt:
+```
+pip install -r ./requirements.txt
+```
+ 
+ or by command line with pip:
 
 * Windows
 
@@ -79,7 +66,7 @@ sudo apt-get install protobuf
 ```
 3 . Launch by command:
 ```
-python ./launcher/Main.py
+python ./Main.py
 
 ```
 4 . Generation output will be in './out' folder by default. 

@@ -23,12 +23,10 @@ class PathProvider(Provider):
             PathKeys.LOG: Path(os.path.join(self.__root_location, "log")),
             PathKeys.SETTINGS: Path(os.path.join(self.__root_location, "settings.json")),
             PathKeys.GEN_SETTINGS: Path(os.path.join(self.__root_location, "gen-settings.json")),
-            PathKeys.DEFAULT_SETTINGS: Path(os.path.join(self.__root_location, "settings-default.json")),
-            PathKeys.DEFAULT_GEN_SETTINGS: Path(os.path.join(self.__root_location, "gen-settings-default.json")),
             PathKeys.GEN_OUT: Path(os.path.join(self.__root_location, "out"))
         }
 
-    def load(self, read_method=JSONReadService.read):
+    def load(self, read_method=JSONReadService.read, load_default=False):
         """
          Load pathes dictionary based on root file location, by default PathProvider.py
         """
@@ -36,12 +34,13 @@ class PathProvider(Provider):
         try:
             if os.path.exists(self.location):
                 pathes = read_method(self.location, PathDecoder)
-                if pathes is None:
+                if pathes is None and load_default:
                     pathes = self.__set_to_defaults()
                 else:
                     self.__create_pathes(pathes)
             else:
-                pathes = self.__set_to_defaults()
+                if load_default:
+                    pathes = self.__set_to_defaults()
         except:
             if self.logger is not None:
                 self.logger.log_fatal("Error while loading PathProvider", include_traceback=True)

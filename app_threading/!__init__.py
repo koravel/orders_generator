@@ -1,6 +1,6 @@
 # region Deprecated_code
 import math
-import thread
+import threading
 import traceback
 from datetime import datetime
 from os import path
@@ -14,8 +14,8 @@ import service.message_broker.rabbitmq as rabbit
 import util
 
 notes = []
-is_generating = thread.Event()
-is_throwing = thread.Event()
+is_generating = threading.Event()
+is_throwing = threading.Event()
 notes_count = 0
 portion_iter = 0
 notes_amount = 0
@@ -31,9 +31,9 @@ def setup():
     open(out_path, 'x+').close()
 
 # AND THS ONE TOO!!!
-class GenerationThread(thread.Thread):
+class GenerationThread(threading.Thread):
     def __init__(self, threadID, name, notes_sequence):
-        thread.Thread.__init__(self)
+        threading.Thread.__init__(self)
         self.threadID = threadID
         self.name = name
         self.notes_sequence = notes_sequence
@@ -43,9 +43,9 @@ class GenerationThread(thread.Thread):
             generate(self.notes_sequence)
 
 # ALSO THIS!!!
-class ToFileThread(thread.Thread):
+class ToFileThread(threading.Thread):
     def __init__(self, threadID, name):
-        thread.Thread.__init__(self)
+        threading.Thread.__init__(self)
         self.threadID = threadID
         self.name = name
 
@@ -112,7 +112,7 @@ def to_mysql():
     mysql.close(connector)
 
     finish_time = datetime.now() - start_time
-    util.logger.log_debug("Finish 'to_mysql' thread after {} sec".format(finish_time))
+    util.logger.log_debug("Finish 'to_mysql' app_threading after {} sec".format(finish_time))
 
 # I'M TIRED, GO ON IF YOU'D LIKE!!!
 def to_rabbitmq_queue():
@@ -133,5 +133,5 @@ def to_rabbitmq_queue():
     rabbit.close_connection(rabbit_connection)
 
     finish_time = datetime.now() - start_time
-    util.logger.log_debug("Finish 'to_rabbitmq_queue' thread after {} sec".format(finish_time))
+    util.logger.log_debug("Finish 'to_rabbitmq_queue' app_threading after {} sec".format(finish_time))
 # endregion

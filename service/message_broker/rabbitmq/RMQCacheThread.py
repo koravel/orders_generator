@@ -1,4 +1,4 @@
-from thread.TaskThread import TaskThread
+from threading.TaskThread import TaskThread
 
 
 class RMQCacheThread(TaskThread):

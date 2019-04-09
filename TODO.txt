@@ -1,7 +1,2 @@
-1.Consants - read from file instead of in-code init
-2. Default values - load from default-<filename>, if not presented in <filename>
-3. Service stuff for orders&records
 4. Reporter
-5. constants, order_constructor
 6. RabbitMQCaching for multiple queues
-7. RMQ functions

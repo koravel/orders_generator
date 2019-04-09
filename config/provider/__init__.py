@@ -43,6 +43,9 @@ class SettingsKeys:
     host = "host"
     port = "port"
     keep_connection_open = "keep_connection_open"
+    instant_connection_attempts = "instant_connection_attempts"
+    connection_attempts = "connection_attempts"
+    connection_attempts_delay = "connection_attempts_delay"
     order_table = "order_table"
     password = "password"
     user = "user"
@@ -50,12 +53,10 @@ class SettingsKeys:
 
     rabbit = "rabbit"
 
-    cache_message_lifetime = "cache_message_lifetime"
+    message_ttl = "message_ttl"
     enable_cache = "enable_cache"
-    exchange = "exchange"
     vhost = "vhost"
     mysql_table = "mysql_table"
-    routing_key = "routing_key"
 
 
     system = "system"

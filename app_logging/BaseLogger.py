@@ -2,7 +2,7 @@ import abc
 import traceback
 from datetime import datetime
 
-from llogging import _LogLevel
+from app_logging import _LogLevel
 import util.TextConstants as tconst
 
 
@@ -30,7 +30,7 @@ class BaseLogger:
 
             traceback_log = traceback.format_exc()
             if len(traceback_log) > 15:
-                formatted_log = "\n{}\n{}".format(traceback_log, formatted_log)
+                formatted_log = "\n{}\n{}".format(formatted_log, traceback_log)
 
             if destination == "":
                 if self.__enable_caching:

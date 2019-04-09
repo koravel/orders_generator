@@ -1,12 +1,4 @@
 {
-    "DEFAULT_GEN_SETTINGS": {
-        "is_remote": false,
-        "location": "D:\\CodingProjects\\Python\\orders_generator\\gen-settings-default.json"
-    },
-    "DEFAULT_SETTINGS": {
-        "is_remote": false,
-        "location": "D:\\CodingProjects\\Python\\orders_generator\\settings-default.json"
-    },
     "GEN_OUT": {
         "is_remote": false,
         "location": "D:\\CodingProjects\\Python\\orders_generator\\out"

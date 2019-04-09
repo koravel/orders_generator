@@ -1,25 +1,45 @@
 import os
 
+from app_threading.TaskThread import TaskThread
+from app_threading.ThreadPool import ThreadPool
 from config.provider import PathKeys
 from config.provider import GenSettingsKeys
 from config.provider import SettingsKeys
 from config.Config import Config
 from converter.OrderRecordToProto import OrderRecordToProto
 from generator.OrderRecordConstructor import OrderRecordConstructor
-from llogging.LogDistributorBuilder import LogDistributorBuilder
-from llogging.Logger import Logger
+from app_logging.LogDistributorBuilder import LogDistributorBuilder
+from app_logging.Logger import Logger
 from config.provider.SettingsProvider import SettingsProvider
 from config.provider.PathProvider import PathProvider
+from proto.OrderRecord_pb2 import OrderRecord
 from service.file.FileWriteService import FileWriteService
 from service.message_broker.rabbitmq.RabbitMQService import RabbitMQService
 from service.order.OrderRecordFileReadService import OrderFileReadService
-from service.order.OrderMySQLService import OrderMySQLService
+from service.database.mysql.CRUDService import CRUDService
 from util import delete_excess_files
 from util.connection.MySQLConnection import MySQLConnection
 from util.connection.RabbitMQConnection import RabbitMQConnection
 
 
 class App:
+    logger = None
+    path_provider = None
+    settings_provider = None
+    gen_settings_provider = None
+    thread_pool = None
+
+    mysql_service = None
+    rabbitmq_service = None
+
+    red_queue = "red"
+    green_queue = "green"
+    blue_queue = "blue"
+    exchange_name = "order_records"
+    exchange_mode = "direct"
+
+    __table = ""
+
     @staticmethod
     def initialize():
         config = Config()
@@ -29,14 +49,13 @@ class App:
         logger = Logger()
         logger.setup([default_log_distributor])
 
-        path_provider = PathProvider(logger=logger)
+        App.path_provider = PathProvider(logger=logger)
 
-        config.pathes = path_provider.load()
+        config.pathes = App.path_provider.load(load_default=True)
 
-        settings_provider = SettingsProvider(location=config.pathes[PathKeys.SETTINGS].location,
-                                             default_location=config.pathes[PathKeys.DEFAULT_SETTINGS].location,
+        App.settings_provider = SettingsProvider(location=config.pathes[PathKeys.SETTINGS].location,
                                              logger=logger)
-        config.settings = settings_provider.load()
+        config.settings = App.settings_provider.load()
 
         log_distributor_builder.setup(config.settings[SettingsKeys.logging][SettingsKeys.loggers])
         log_distributors = log_distributor_builder.build_all()
@@ -53,17 +72,66 @@ class App:
             config.settings[SettingsKeys.logging][SettingsKeys.logger_files_max],
             logger)
 
-        gen_settings_provider = SettingsProvider(location=config.pathes[PathKeys.GEN_SETTINGS].location,
-                                                 default_location=config.pathes[
-                                                     PathKeys.DEFAULT_GEN_SETTINGS].location,
+        App.gen_settings_provider = SettingsProvider(location=config.pathes[PathKeys.GEN_SETTINGS].location,
                                                  logger=logger)
-        config.gen_settings = gen_settings_provider.load()
+        config.gen_settings = App.gen_settings_provider.load()
 
-        return config, logger, path_provider, settings_provider, gen_settings_provider
+        App.logger = logger
+        App.setup_services(config)
+        App.setup_thread_pool(config)
+
+        return config
 
     @staticmethod
-    def generate(config, logger):
-        order_record_constructor = OrderRecordConstructor(config.gen_settings, logger)
+    def setup_thread_pool(config):
+        App.thread_pool = ThreadPool(App.logger)
+        App.thread_pool.setup(config.settings[SettingsKeys.system][SettingsKeys.threads_max])
+        App.thread_pool.add_data("consumed_messages", 0)
+
+        thread = TaskThread("rabbit_consuming", App.thread_pool, App.logger)
+        thread.setup(task=App.__consuming)
+        App.thread_pool.add_thead(thread=thread)
+
+    @staticmethod
+    def setup_services(config):
+        App.rabbitmq_service = RabbitMQService(connection=RabbitMQConnection(
+            host=config.settings[SettingsKeys.rabbit][SettingsKeys.host],
+            port=config.settings[SettingsKeys.rabbit][SettingsKeys.port],
+            vhost=config.settings[SettingsKeys.rabbit][SettingsKeys.vhost],
+            user=config.settings[SettingsKeys.rabbit][SettingsKeys.user],
+            password=config.settings[SettingsKeys.rabbit][SettingsKeys.password],
+            logger=App.logger
+        ),
+            logger=App.logger)
+
+        App.rabbitmq_service.declare_queue(App.red_queue)
+        App.rabbitmq_service.declare_queue(App.green_queue)
+        App.rabbitmq_service.declare_queue(App.blue_queue)
+
+        App.rabbitmq_service.declare_router(App.exchange_name, App.exchange_mode)
+
+        App.rabbitmq_service.bind_queue(App.red_queue, App.exchange_name, App.red_queue)
+        App.rabbitmq_service.bind_queue(App.green_queue, App.exchange_name, App.green_queue)
+        App.rabbitmq_service.bind_queue(App.blue_queue, App.exchange_name, App.blue_queue)
+
+        App.mysql_service = CRUDService(MySQLConnection(
+            host=config.settings[SettingsKeys.mysql][SettingsKeys.host],
+            port=config.settings[SettingsKeys.mysql][SettingsKeys.port],
+            db=config.settings[SettingsKeys.mysql][SettingsKeys.database],
+            user=config.settings[SettingsKeys.mysql][SettingsKeys.user],
+            password=config.settings[SettingsKeys.mysql][SettingsKeys.password],
+            logger=App.logger
+        ),
+            keep_connection_open=config.settings[SettingsKeys.mysql][SettingsKeys.keep_connection_open],
+            attempts=config.settings[SettingsKeys.mysql][SettingsKeys.connection_attempts],
+            delay=config.settings[SettingsKeys.mysql][SettingsKeys.connection_attempts_delay],
+            instant_connection_attempts=config.settings[SettingsKeys.mysql][SettingsKeys.instant_connection_attempts],
+            logger=App.logger
+        )
+
+    @staticmethod
+    def generate(config):
+        order_record_constructor = OrderRecordConstructor(config.gen_settings, App.logger)
         order_record_constructor.setup_generators(
             x=config.gen_settings[GenSettingsKeys.x],
             y=config.gen_settings[GenSettingsKeys.y],
@@ -75,10 +143,17 @@ class App:
         order_record_sequence = order_record_constructor.get_sequence()
 
         records = []
+        App.thread_pool.add_data("order_records_amount", order_record_constructor.get_order_records_amount())
+        counter = order_record_constructor.get_order_records_amount() / config.gen_settings[GenSettingsKeys.portion_amount]
         for record in order_record_sequence:
-
             records.append(record)
-        return records
+            if len(records) == config.gen_settings[GenSettingsKeys.portion_amount] and counter > 0:
+                counter -= 1
+                yield records
+                records = []
+
+        if len(records) > 0:
+            yield records
 
     @staticmethod
     def to_file(config, orders, file_name):
@@ -92,18 +167,7 @@ class App:
         return orders
 
     @staticmethod
-    def to_mysql(config, logger, order_records):
-        mysql_service = OrderMySQLService(MySQLConnection(
-            host=config.settings[SettingsKeys.mysql][SettingsKeys.host],
-            port=config.settings[SettingsKeys.mysql][SettingsKeys.port],
-            db=config.settings[SettingsKeys.mysql][SettingsKeys.database],
-            user=config.settings[SettingsKeys.mysql][SettingsKeys.user],
-            password=config.settings[SettingsKeys.mysql][SettingsKeys.password],
-            logger=logger
-        ),
-            keep_connection_open=True,
-            logger=logger
-        )
+    def to_mysql(config, order_records):
         for order_record in order_records:
             params = {
                 "id": order_record.get_id(),
@@ -120,7 +184,7 @@ class App:
                 "description": order_record.order.get_description()
                 }
 
-            mysql_service.insert(config.settings[SettingsKeys.mysql][SettingsKeys.order_table], params)
+            App.mysql_service.insert(location=config.settings[SettingsKeys.mysql][SettingsKeys.order_table], params=params)
 
     @staticmethod
     def to_proto(order_records):
@@ -131,34 +195,56 @@ class App:
         return protos
 
     @staticmethod
-    def to_rabbitmq(config, logger, proto_records):
-        rabbitmq = RabbitMQService(connection=RabbitMQConnection(
-            host=config.settings[SettingsKeys.rabbit][SettingsKeys.host],
-
-            vhost=config.settings[SettingsKeys.rabbit][SettingsKeys.vhost],
-            user=config.settings[SettingsKeys.rabbit][SettingsKeys.user],
-            password=config.settings[SettingsKeys.rabbit][SettingsKeys.password],
-            logger=logger
-        ),
-            logger=logger)
-
-        rabbitmq.declare_queue("red")
-        rabbitmq.declare_queue("green")
-        rabbitmq.declare_queue("blue")
-
-        rabbitmq.declare_router("proto_exchange", "direct")
-
-        rabbitmq.bind_queue("red", "proto_exchange", "red")
-        rabbitmq.bind_queue("green", "proto_exchange", "green")
-        rabbitmq.bind_queue("blue", "proto_exchange", "blue")
-
+    def to_rabbitmq(proto_records):
         for record in proto_records:
-            rabbitmq.send_message("proto_exchange", record.zone, record.SerializeToString())
+            App.rabbitmq_service.send_message(App.exchange_name, record.zone, record.SerializeToString())
+
+    @staticmethod
+    def mysql_callback(ch, method, properties, body):
+        App.thread_pool.update_data("consumed_messages", App.thread_pool.get_data("consumed_messages") + 1)
+        order_record = OrderRecord()
+        order_record.ParseFromString(body)
+        params = {
+            "id": order_record.id,
+            "order_id": order_record.order_id,
+            "status": order_record.status,
+            "timestamp": order_record.timestamp,
+            "currency_pair": order_record.currency_pair,
+            "direction": order_record.direction,
+            "init_price": order_record.init_price,
+            "fill_price": order_record.fill_price,
+            "init_volume": order_record.init_volume,
+            "fill_volume": order_record.fill_volume,
+            "tags": order_record.tags,
+            "description": order_record.description
+        }
+        try:
+            App.mysql_service.insert(location=App.__table, params=params)
+        except:
+            App.logger.log_error()
+        else:
+            if App.thread_pool.get_data("consumed_messages") >= App.thread_pool.get_data("order_records_amount"):
+                App.rabbitmq_service.stop_consuming()
+
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+
+    @staticmethod
+    def from_rabbit_to_mysql(config):
+        App.__table = config.settings[SettingsKeys.mysql][SettingsKeys.order_table]
+
+        for queue_name in [App.red_queue, App.green_queue, App.blue_queue]:
+            App.rabbitmq_service.consume_message(queue_name=queue_name, on_consume_callback=App.mysql_callback)
+
+        App.thread_pool.start_thread("rabbit_consuming")
+
+    @staticmethod
+    def __consuming(events, data, logger):
+        App.rabbitmq_service.start_consuming()
 
     @staticmethod
     def report(logger, timings, proto_records):
-
-        zone_counts = {
+        pass
+        """zone_counts = {
             "red": 0,
             "green": 0,
             "blue": 0,
@@ -193,10 +279,10 @@ class App:
                                 timings["mysql"],
                                 timings["proto"],
                                 timings["rabbit"]
-                                ))
+                                ))"""
 
     @staticmethod
-    def finalize(config, path_provider, settings_provider, gen_settings_provider):
-        path_provider.save(config.pathes)
-        settings_provider.save(config.settings)
-        gen_settings_provider.save(config.gen_settings)
+    def finalize(config):
+        App.path_provider.save(config.pathes)
+        App.settings_provider.save(config.settings)
+        App.gen_settings_provider.save(config.gen_settings)

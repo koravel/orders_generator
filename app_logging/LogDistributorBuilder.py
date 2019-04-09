@@ -1,9 +1,9 @@
-from llogging import _LogLevel
-from llogging.BaseLogger import BaseLogger
-from llogging.FileLogger import FileLogger
-from llogging.FolderLogger import FolderLogger
-from llogging.LogDistributor import LogDistributor
-from llogging.TransitFilter import TransitFilter
+from app_logging import _LogLevel
+from app_logging.BaseLogger import BaseLogger
+from app_logging.FileLogger import FileLogger
+from app_logging.FolderLogger import FolderLogger
+from app_logging.LogDistributor import LogDistributor
+from app_logging.TransitFilter import TransitFilter
 
 
 class _LoggerSettingOptions:
