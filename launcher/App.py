@@ -1,5 +1,9 @@
 import os
+import time
+from datetime import datetime
 
+from reporter.Repoter import Reporter
+from tracking import ReportDataKeys
 from app_threading.TaskThread import TaskThread
 from app_threading.ThreadPool import ThreadPool
 from config.provider import PathKeys
@@ -12,11 +16,12 @@ from app_logging.LogDistributorBuilder import LogDistributorBuilder
 from app_logging.Logger import Logger
 from config.provider.SettingsProvider import SettingsProvider
 from config.provider.PathProvider import PathProvider
-from proto.OrderRecord_pb2 import OrderRecord
+from serializer.proto.OrderRecord_pb2 import OrderRecord
 from service.file.FileWriteService import FileWriteService
 from service.message_broker.rabbitmq.RabbitMQService import RabbitMQService
 from service.order.OrderRecordFileReadService import OrderFileReadService
 from service.database.mysql.CRUDService import CRUDService
+from tracking.ReportDataCollector import ReportDataCollector
 from util import delete_excess_files
 from util.connection.MySQLConnection import MySQLConnection
 from util.connection.RabbitMQConnection import RabbitMQConnection
@@ -31,6 +36,7 @@ class App:
 
     mysql_service = None
     rabbitmq_service = None
+    data_collector = None
 
     red_queue = "red"
     green_queue = "green"
@@ -79,6 +85,11 @@ class App:
         App.logger = logger
         App.setup_services(config)
         App.setup_thread_pool(config)
+
+        App.data_collector = ReportDataCollector()
+        App.data_collector.setup()
+
+        App.reporter = Reporter(App.data_collector.data)
 
         return config
 
@@ -144,16 +155,25 @@ class App:
 
         records = []
         App.thread_pool.add_data("order_records_amount", order_record_constructor.get_order_records_amount())
+
         counter = order_record_constructor.get_order_records_amount() / config.gen_settings[GenSettingsKeys.portion_amount]
+        timer = datetime.now()
         for record in order_record_sequence:
             records.append(record)
+
             if len(records) == config.gen_settings[GenSettingsKeys.portion_amount] and counter > 0:
                 counter -= 1
                 yield records
                 records = []
 
+            App.data_collector.update_zone_data(timer, record.get_zone())
+
+            timer = datetime.now()
+
         if len(records) > 0:
             yield records
+
+        App.report()
 
     @staticmethod
     def to_file(config, orders, file_name):
@@ -200,8 +220,14 @@ class App:
             App.rabbitmq_service.send_message(App.exchange_name, record.zone, record.SerializeToString())
 
     @staticmethod
+    def get_status_count(status):
+        return App.mysql_service.select(params="count(*)", location=App.__table, conditions="status=\'{}\'".format(status))[0][0]
+
+    @staticmethod
     def mysql_callback(ch, method, properties, body):
         App.thread_pool.update_data("consumed_messages", App.thread_pool.get_data("consumed_messages") + 1)
+        App.data_collector.set_data(ReportDataKeys.rabbit_consumed,
+                                    App.data_collector.get_data(ReportDataKeys.rabbit_consumed) + 1)
         order_record = OrderRecord()
         order_record.ParseFromString(body)
         params = {
@@ -223,7 +249,14 @@ class App:
         except:
             App.logger.log_error()
         else:
+            App.data_collector.set_data(ReportDataKeys.mysql_new, App.get_status_count("New"))
+            App.data_collector.set_data(ReportDataKeys.mysql_to_provider, App.get_status_count("To provider"))
+            App.data_collector.set_data(ReportDataKeys.mysql_rejected, App.get_status_count("Reject"))
+            App.data_collector.set_data(ReportDataKeys.mysql_partial_filled, App.get_status_count("Partial filled"))
+            App.data_collector.set_data(ReportDataKeys.mysql_filled, App.get_status_count("Filled"))
+
             if App.thread_pool.get_data("consumed_messages") >= App.thread_pool.get_data("order_records_amount"):
+                App.report()
                 App.rabbitmq_service.stop_consuming()
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -242,44 +275,10 @@ class App:
         App.rabbitmq_service.start_consuming()
 
     @staticmethod
-    def report(logger, timings, proto_records):
-        pass
-        """zone_counts = {
-            "red": 0,
-            "green": 0,
-            "blue": 0,
-        }
+    def report():
+        result = App.reporter.get_report()
 
-        for record in proto_records:
-            if record.zone == "red":
-                zone_counts["red"] += 1
-            elif record.zone == "green":
-                zone_counts["green"] += 1
-            elif record.zone == "blue":
-                zone_counts["blue"] += 1
-
-        logger.log_info("\n=======REPORT=======\n"
-                        "Order records in:\n"
-                        "Red zone:{}\n"
-                        "Green zone:{}\n"
-                        "Blue zone:{}\n"
-                        "Setup time:{}\n"
-                        "Generation time:{}\n"
-                        "Write to file time:{}\n"
-                        "Read from file time:{}\n"
-                        "Write to MySQL DB time:{}\n"
-                        "Convert to proto time:{}\n"
-                        "Send to RabbitMQ time:{}\n"
-                        "\n=====END=REPORT=====\n"
-                        .format(zone_counts["red"], zone_counts["green"], zone_counts["blue"],
-                                timings["setup"],
-                                timings["gen"],
-                                timings["to_file"],
-                                timings["from_file"],
-                                timings["mysql"],
-                                timings["proto"],
-                                timings["rabbit"]
-                                ))"""
+        App.logger.log_info(result)
 
     @staticmethod
     def finalize(config):

@@ -1,4 +1,4 @@
-from proto.OrderRecord_pb2 import OrderRecord
+from serializer.proto.OrderRecord_pb2 import OrderRecord
 
 
 class OrderRecordToProto:

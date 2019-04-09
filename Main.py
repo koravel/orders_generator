@@ -29,7 +29,7 @@ class Main:
 
         App.from_rabbit_to_mysql(Main.config)
 
-            # App.report(Main.logger, Main.timings, proto_records)
+        App.report()
 
     @staticmethod
     def finalize():

@@ -13,19 +13,22 @@ class MySQLService(DataBase):
         self.__keep_connection_open = keep_connection_open
         self._logger = logger
 
-    def execute_query(self, query, params=None, attempts=3, delay=0.5, instant_connection_attempts=False):
+    def execute_query(self, query, params=None, attempts=3, delay=0.5, instant_connection_attempts=False, commit=True, fetch=False):
         if self.__connection.is_connected():
 
             connector = self.__connection.get_instance()
 
             cursor = connector.cursor()
 
-            self.__execute(connector, cursor, query)
+            result = self.__execute(connector, cursor, query, commit, fetch)
 
             cursor.close()
 
             if not self.__keep_connection_open:
                 connector.close()
+
+            if fetch:
+                return result
         else:
             if self.__connection.get_instance() is not None:
                 self._logger.log_error("MySQL connection dropped. Try to reconnect...")
@@ -37,17 +40,23 @@ class MySQLService(DataBase):
                 connection_opened = self.__connection.try_open(attempts=attempts, delay=delay, loop=False)
 
             if connection_opened:
-                self.execute_query(query, params, attempts, delay)
+                return self.execute_query(query, params, attempts, delay, instant_connection_attempts, commit, fetch)
 
-    def __execute(self, connector, cursor, query):
+    def __execute(self, connector, cursor, query, commit, fetch):
         try:
             cursor.execute(query)
 
-            connector.commit()
+            if fetch:
+                result = cursor.fetchall()
+
+            if commit:
+                connector.commit()
 
         except Exception as ex:
             connector.rollback()
             self._logger.log_error("{} occupied while executing query:\n{}".format(str(ex), query))
             return False
         else:
+            if fetch:
+                return result
             return True

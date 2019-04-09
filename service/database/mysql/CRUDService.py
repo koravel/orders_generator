@@ -29,9 +29,11 @@ class CRUDService(MySQLService, CRUD):
                 values += "{},".format(v)
 
         query = "insert into {} ({}) values({});".format(location, fields[:-1], values[:-1])
-
-        super().execute_query(query=query, delay=self.__delay, attempts=self.__attempts,
-                              instant_connection_attempts=self.__instant_connection_attempts)
+        try:
+            super().execute_query(query=query, delay=self.__delay, attempts=self.__attempts,
+                                  instant_connection_attempts=self.__instant_connection_attempts)
+        except Exception as ex:
+            raise ex
 
     def update(self, location, params, conditions):
         set_text = ""
@@ -50,6 +52,7 @@ class CRUDService(MySQLService, CRUD):
         super().execute_query(query=query, delay=self.__delay, attempts=self.__attempts,
                               instant_connection_attempts=self.__instant_connection_attempts)
 
-    def select(self, location, params, conditions):
+    def select(self, params, location, conditions):
+        query = "select {} from {} where {};".format(params, location, conditions)
 
-        super().execute_query("select {} from {} where {};".format(location, params, conditions))
+        return super().execute_query(query=query, commit=False, fetch=True)

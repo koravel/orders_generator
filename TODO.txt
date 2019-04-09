@@ -1,2 +1,1 @@
-4. Reporter
 6. RabbitMQCaching for multiple queues
