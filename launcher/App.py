@@ -1,5 +1,4 @@
 import os
-import time
 from datetime import datetime
 
 from reporter.Repoter import Reporter
@@ -28,23 +27,28 @@ from util.connection.RabbitMQConnection import RabbitMQConnection
 
 
 class App:
-    logger = None
-    path_provider = None
-    settings_provider = None
-    gen_settings_provider = None
-    thread_pool = None
+    __logger = None
+    __path_provider = None
+    __settings_provider = None
+    __gen_settings_provider = None
+    __thread_pool = None
 
-    mysql_service = None
-    rabbitmq_service = None
-    data_collector = None
+    __mysql_service = None
+    __rabbitmq_service = None
+    __data_collector = None
+    __reporter = None
 
-    red_queue = "red"
-    green_queue = "green"
-    blue_queue = "blue"
-    exchange_name = "order_records"
-    exchange_mode = "direct"
+    __exchange_name = ""
+    __exchange_mode = ""
+    __queues = ""
 
     __table = ""
+
+    __sql_batch_buffer = []
+    __batch_amount = 0
+    last_batch_amount = 0
+    __whole_butches_amount = 0
+    __mysql_butches_counter = 0
 
     @staticmethod
     def initialize():
@@ -55,13 +59,13 @@ class App:
         logger = Logger()
         logger.setup([default_log_distributor])
 
-        App.path_provider = PathProvider(logger=logger)
+        App.__path_provider = PathProvider(logger=logger)
 
-        config.pathes = App.path_provider.load(load_default=True)
+        config.pathes = App.__path_provider.load(load_default=True)
 
-        App.settings_provider = SettingsProvider(location=config.pathes[PathKeys.SETTINGS].location,
-                                             logger=logger)
-        config.settings = App.settings_provider.load()
+        App.__settings_provider = SettingsProvider(location=config.pathes[PathKeys.SETTINGS].location,
+                                                   logger=logger)
+        config.settings = App.__settings_provider.load()
 
         log_distributor_builder.setup(config.settings[SettingsKeys.logging][SettingsKeys.loggers])
         log_distributors = log_distributor_builder.build_all()
@@ -78,71 +82,77 @@ class App:
             config.settings[SettingsKeys.logging][SettingsKeys.logger_files_max],
             logger)
 
-        App.gen_settings_provider = SettingsProvider(location=config.pathes[PathKeys.GEN_SETTINGS].location,
-                                                 logger=logger)
-        config.gen_settings = App.gen_settings_provider.load()
+        App.__gen_settings_provider = SettingsProvider(location=config.pathes[PathKeys.GEN_SETTINGS].location,
+                                                       logger=logger)
+        config.gen_settings = App.__gen_settings_provider.load()
 
-        App.logger = logger
+        App.__logger = logger
         App.setup_services(config)
         App.setup_thread_pool(config)
 
-        App.data_collector = ReportDataCollector()
-        App.data_collector.setup()
+        App.__data_collector = ReportDataCollector()
+        App.__data_collector.setup()
 
-        App.reporter = Reporter(App.data_collector.data)
+        App.__reporter = Reporter(App.__data_collector.data)
+
+        App.__batch_amount = config.gen_settings[GenSettingsKeys.portion_amount]
+
+        if config.settings[SettingsKeys.system]["clear"]:
+            from launcher import clear_services
+            clear_services(config, logger)
 
         return config
 
     @staticmethod
     def setup_thread_pool(config):
-        App.thread_pool = ThreadPool(App.logger)
-        App.thread_pool.setup(config.settings[SettingsKeys.system][SettingsKeys.threads_max])
-        App.thread_pool.add_data("consumed_messages", 0)
+        App.__thread_pool = ThreadPool(App.__logger)
+        App.__thread_pool.setup(config.settings[SettingsKeys.system][SettingsKeys.threads_max])
+        App.__thread_pool.add_data("consumed_messages", 0)
 
-        thread = TaskThread("rabbit_consuming", App.thread_pool, App.logger)
+        thread = TaskThread("rabbit_consuming", App.__thread_pool, App.__logger)
         thread.setup(task=App.__consuming)
-        App.thread_pool.add_thead(thread=thread)
+        App.__thread_pool.add_thead(thread=thread)
 
     @staticmethod
     def setup_services(config):
-        App.rabbitmq_service = RabbitMQService(connection=RabbitMQConnection(
+        App.__rabbitmq_service = RabbitMQService(connection=RabbitMQConnection(
             host=config.settings[SettingsKeys.rabbit][SettingsKeys.host],
             port=config.settings[SettingsKeys.rabbit][SettingsKeys.port],
             vhost=config.settings[SettingsKeys.rabbit][SettingsKeys.vhost],
             user=config.settings[SettingsKeys.rabbit][SettingsKeys.user],
             password=config.settings[SettingsKeys.rabbit][SettingsKeys.password],
-            logger=App.logger
+            logger=App.__logger
         ),
-            logger=App.logger)
+            logger=App.__logger)
 
-        App.rabbitmq_service.declare_queue(App.red_queue)
-        App.rabbitmq_service.declare_queue(App.green_queue)
-        App.rabbitmq_service.declare_queue(App.blue_queue)
+        App.__exchange_name = config.settings[SettingsKeys.rabbit][SettingsKeys.order_record_config][SettingsKeys.exchange_name]
+        App.__exchange_mode = config.settings[SettingsKeys.rabbit][SettingsKeys.order_record_config][SettingsKeys.exchange_mode]
+        App.__queues = config.settings[SettingsKeys.rabbit][SettingsKeys.order_record_config][SettingsKeys.queues]
 
-        App.rabbitmq_service.declare_router(App.exchange_name, App.exchange_mode)
+        App.__rabbitmq_service.declare_router(App.__exchange_name, App.__exchange_mode)
 
-        App.rabbitmq_service.bind_queue(App.red_queue, App.exchange_name, App.red_queue)
-        App.rabbitmq_service.bind_queue(App.green_queue, App.exchange_name, App.green_queue)
-        App.rabbitmq_service.bind_queue(App.blue_queue, App.exchange_name, App.blue_queue)
+        for queue_name in App.__queues:
+            App.__rabbitmq_service.declare_queue(queue_name)
+            App.__rabbitmq_service.bind_queue(queue_name, App.__exchange_name, queue_name)
 
-        App.mysql_service = CRUDService(MySQLConnection(
+        App.__mysql_service = CRUDService(MySQLConnection(
             host=config.settings[SettingsKeys.mysql][SettingsKeys.host],
             port=config.settings[SettingsKeys.mysql][SettingsKeys.port],
             db=config.settings[SettingsKeys.mysql][SettingsKeys.database],
             user=config.settings[SettingsKeys.mysql][SettingsKeys.user],
             password=config.settings[SettingsKeys.mysql][SettingsKeys.password],
-            logger=App.logger
+            logger=App.__logger
         ),
             keep_connection_open=config.settings[SettingsKeys.mysql][SettingsKeys.keep_connection_open],
             attempts=config.settings[SettingsKeys.mysql][SettingsKeys.connection_attempts],
             delay=config.settings[SettingsKeys.mysql][SettingsKeys.connection_attempts_delay],
             instant_connection_attempts=config.settings[SettingsKeys.mysql][SettingsKeys.instant_connection_attempts],
-            logger=App.logger
+            logger=App.__logger
         )
 
     @staticmethod
     def generate(config):
-        order_record_constructor = OrderRecordConstructor(config.gen_settings, App.logger)
+        order_record_constructor = OrderRecordConstructor(config.gen_settings, App.__logger)
         order_record_constructor.setup_generators(
             x=config.gen_settings[GenSettingsKeys.x],
             y=config.gen_settings[GenSettingsKeys.y],
@@ -154,19 +164,26 @@ class App:
         order_record_sequence = order_record_constructor.get_sequence()
 
         records = []
-        App.thread_pool.add_data("order_records_amount", order_record_constructor.get_order_records_amount())
+        App.__thread_pool.add_data("order_records_amount", order_record_constructor.get_order_records_amount())
 
-        counter = order_record_constructor.get_order_records_amount() / config.gen_settings[GenSettingsKeys.portion_amount]
+        order_records_amount = order_record_constructor.get_order_records_amount()
+
+        App.__whole_butches_amount = int(order_records_amount / App.__batch_amount)
+
+        App.last_batch_amount = order_records_amount - App.__whole_butches_amount * App.__batch_amount
+
+        counter = App.__whole_butches_amount
         timer = datetime.now()
         for record in order_record_sequence:
             records.append(record)
 
-            if len(records) == config.gen_settings[GenSettingsKeys.portion_amount] and counter > 0:
+            if len(records) == App.__batch_amount and counter > 0:
                 counter -= 1
+
                 yield records
                 records = []
 
-            App.data_collector.update_zone_data(timer, record.get_zone())
+            App.__data_collector.update_zone_data(timer, record.get_zone())
 
             timer = datetime.now()
 
@@ -204,7 +221,7 @@ class App:
                 "description": order_record.order.get_description()
                 }
 
-            App.mysql_service.insert(location=config.settings[SettingsKeys.mysql][SettingsKeys.order_table], params=params)
+            App.__mysql_service.insert(location=config.settings[SettingsKeys.mysql][SettingsKeys.order_table], params=params)
 
     @staticmethod
     def to_proto(order_records):
@@ -217,47 +234,68 @@ class App:
     @staticmethod
     def to_rabbitmq(proto_records):
         for record in proto_records:
-            App.rabbitmq_service.send_message(App.exchange_name, record.zone, record.SerializeToString())
+            App.__rabbitmq_service.send_message(App.__exchange_name, record.zone, record.SerializeToString())
 
     @staticmethod
     def get_status_count(status):
-        return App.mysql_service.select(params="count(*)", location=App.__table, conditions="status=\'{}\'".format(status))[0][0]
+        return App.__mysql_service.select(params="count(*)", location=App.__table, conditions="status=\'{}\'".format(status))[0][0]
+
+    __order_fields = [
+        "id",
+        "order_id",
+        "status",
+        "timestamp",
+        "currency_pair",
+        "direction",
+        "init_price",
+        "fill_price",
+        "init_volume",
+        "fill_volume",
+        "tags",
+        "description"
+    ]
 
     @staticmethod
     def mysql_callback(ch, method, properties, body):
-        App.thread_pool.update_data("consumed_messages", App.thread_pool.get_data("consumed_messages") + 1)
-        App.data_collector.set_data(ReportDataKeys.rabbit_consumed,
-                                    App.data_collector.get_data(ReportDataKeys.rabbit_consumed) + 1)
+        App.__thread_pool.update_data("consumed_messages", App.__thread_pool.get_data("consumed_messages") + 1)
+        App.__data_collector.set_data(ReportDataKeys.rabbit_consumed,
+                                      App.__data_collector.get_data(ReportDataKeys.rabbit_consumed) + 1)
         order_record = OrderRecord()
         order_record.ParseFromString(body)
-        params = {
-            "id": order_record.id,
-            "order_id": order_record.order_id,
-            "status": order_record.status,
-            "timestamp": order_record.timestamp,
-            "currency_pair": order_record.currency_pair,
-            "direction": order_record.direction,
-            "init_price": order_record.init_price,
-            "fill_price": order_record.fill_price,
-            "init_volume": order_record.init_volume,
-            "fill_volume": order_record.fill_volume,
-            "tags": order_record.tags,
-            "description": order_record.description
-        }
-        try:
-            App.mysql_service.insert(location=App.__table, params=params)
-        except:
-            App.logger.log_error()
-        else:
-            App.data_collector.set_data(ReportDataKeys.mysql_new, App.get_status_count("New"))
-            App.data_collector.set_data(ReportDataKeys.mysql_to_provider, App.get_status_count("To provider"))
-            App.data_collector.set_data(ReportDataKeys.mysql_rejected, App.get_status_count("Reject"))
-            App.data_collector.set_data(ReportDataKeys.mysql_partial_filled, App.get_status_count("Partial filled"))
-            App.data_collector.set_data(ReportDataKeys.mysql_filled, App.get_status_count("Filled"))
+        values = [
+            order_record.id,
+            order_record.order_id,
+            order_record.status,
+            order_record.timestamp,
+            order_record.currency_pair,
+            order_record.direction,
+            order_record.init_price,
+            order_record.fill_price,
+            order_record.init_volume,
+            order_record.fill_volume,
+            order_record.tags,
+            order_record.description
+        ]
+        App.__sql_batch_buffer.append(values)
 
-            if App.thread_pool.get_data("consumed_messages") >= App.thread_pool.get_data("order_records_amount"):
-                App.report()
-                App.rabbitmq_service.stop_consuming()
+        if (len(App.__sql_batch_buffer) == App.__batch_amount and App.__mysql_butches_counter > 0)\
+                or (len(App.__sql_batch_buffer) == App.last_batch_amount and App.__mysql_butches_counter == 0):
+            App.__mysql_butches_counter -= 1
+            try:
+                App.__mysql_service.insert_many(location=App.__table, fields=App.__order_fields, values=App.__sql_batch_buffer)
+                App.__sql_batch_buffer.clear()
+            except:
+                App.__logger.log_error()
+            else:
+                App.__data_collector.set_data(ReportDataKeys.mysql_new, App.get_status_count("New"))
+                App.__data_collector.set_data(ReportDataKeys.mysql_to_provider, App.get_status_count("To provider"))
+                App.__data_collector.set_data(ReportDataKeys.mysql_rejected, App.get_status_count("Reject"))
+                App.__data_collector.set_data(ReportDataKeys.mysql_partial_filled, App.get_status_count("Partial filled"))
+                App.__data_collector.set_data(ReportDataKeys.mysql_filled, App.get_status_count("Filled"))
+
+                if App.__thread_pool.get_data("consumed_messages") >= App.__thread_pool.get_data("order_records_amount"):
+                    App.report()
+                    App.__rabbitmq_service.stop_consuming()
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
@@ -265,23 +303,24 @@ class App:
     def from_rabbit_to_mysql(config):
         App.__table = config.settings[SettingsKeys.mysql][SettingsKeys.order_table]
 
-        for queue_name in [App.red_queue, App.green_queue, App.blue_queue]:
-            App.rabbitmq_service.consume_message(queue_name=queue_name, on_consume_callback=App.mysql_callback)
+        for queue_name in App.__queues:
+            App.__rabbitmq_service.consume_message(queue_name=queue_name, on_consume_callback=App.mysql_callback)
 
-        App.thread_pool.start_thread("rabbit_consuming")
+        App.__thread_pool.start_thread("rabbit_consuming")
 
     @staticmethod
     def __consuming(events, data, logger):
-        App.rabbitmq_service.start_consuming()
+        App.__mysql_butches_counter = App.__whole_butches_amount
+        App.__rabbitmq_service.start_consuming()
 
     @staticmethod
     def report():
-        result = App.reporter.get_report()
+        result = App.__reporter.get_report()
 
-        App.logger.log_info(result)
+        App.__logger.log_info(result)
 
     @staticmethod
     def finalize(config):
-        App.path_provider.save(config.pathes)
-        App.settings_provider.save(config.settings)
-        App.gen_settings_provider.save(config.gen_settings)
+        App.__path_provider.save(config.pathes)
+        App.__settings_provider.save(config.settings)
+        App.__gen_settings_provider.save(config.gen_settings)

@@ -163,11 +163,9 @@ class OrderRecordConstructor:
         Creates 3 order notes with statuses 'new', 'to_provider' and 'rejected/filled/p_filled'
         """
         try:
-            result = []
-            i = 0
-            while i < 3:
-                result.append(self.__generate_status_data(self.__statuses[i], order, "green"))
-                i += 1
+            result = [self.__generate_status_data(self.__statuses[0], order, "green"),
+                      self.__generate_status_data(self.__statuses[1], order, "green"),
+                      self.__generate_status_data(self.last_status_generator.__next__(), order, "green")]
         except Exception as ex:
             raise ex
         else:

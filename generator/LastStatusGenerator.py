@@ -2,7 +2,7 @@ from generator.basic.IntGenerator import IntGenerator
 
 
 class LastStatusGenerator(IntGenerator):
-    def get_sequence(self, statuses, length, x, y, a, c, m, t0, min=0, max=2):
+    def get_sequence(self, statuses, length, x, y, a, c, m, t0, min=0, max=3):
         """
         Generates sequence of last statuses.
         :param length: length of sequence

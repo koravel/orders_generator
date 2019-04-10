@@ -38,12 +38,22 @@
         "enable_cache": false,
         "host": "localhost",
         "message_ttl": 10,
+        "order_record_config": {
+            "exchange_mode": "direct",
+            "exchange_name": "order_records",
+            "queues": [
+                "red",
+                "green",
+                "blue"
+            ]
+        },
         "password": "guest",
         "port": "5672",
         "user": "guest",
         "vhost": "/"
     },
     "system": {
+        "clear": true,
         "limited_therads": false,
         "out_files_max": 10,
         "threads_max": 10

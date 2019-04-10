@@ -13,6 +13,32 @@ class CRUDService(MySQLService, CRUD):
         self.__delay = delay
         self.__instant_connection_attempts = instant_connection_attempts
 
+    def insert_many(self, location, fields, values):
+        """
+        :param location: Order table
+        :param params: Dictionary<field, value>
+        """
+        _fields = ""
+        _values = ""
+        for field in fields:
+            _fields += "{},".format(field)
+
+        for obj in values:
+            value_row = ""
+            for value in obj:
+                if isinstance(value, str):
+                    value_row += '\'{}\','.format(value)
+                else:
+                    value_row += "{},".format(value)
+            _values += "({}),".format(value_row[:-1])
+
+        query = "insert into {} ({}) values{};".format(location, _fields[:-1], _values[:-1])
+        try:
+            super().execute_query(query=query, delay=self.__delay, attempts=self.__attempts,
+                                  instant_connection_attempts=self.__instant_connection_attempts)
+        except Exception as ex:
+            raise ex
+
     def insert(self, location, params):
         """
         :param location: Order table

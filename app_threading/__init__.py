@@ -1,19 +1,5 @@
 # region Deprecated_code
-import math
-import threading
-import traceback
-from datetime import datetime
-from os import path
-
-import config.provider.PathProvider as provider
-import config
-import generator
-import service.file as sf
-import service.database.mysql as mysql
-import service.message_broker.rabbitmq as rabbit
-import util
-
-notes = []
+"""notes = []
 is_generating = threading.Event()
 is_throwing = threading.Event()
 notes_count = 0
@@ -133,5 +119,5 @@ def to_rabbitmq_queue():
     rabbit.close_connection(rabbit_connection)
 
     finish_time = datetime.now() - start_time
-    util.logger.log_debug("Finish 'to_rabbitmq_queue' app_threading after {} sec".format(finish_time))
+    util.logger.log_debug("Finish 'to_rabbitmq_queue' app_threading after {} sec".format(finish_time))"""
 # endregion

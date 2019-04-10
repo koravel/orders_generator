@@ -57,6 +57,13 @@ class SettingsKeys:
     enable_cache = "enable_cache"
     vhost = "vhost"
     mysql_table = "mysql_table"
+    order_record = "order_record"
+    queues = "queues"
+    exchange_name = "exchange_name"
+    exchange_mode = "exchange_mode"
+    order_record_config = "order_record_config"
+
+
 
 
     system = "system"
