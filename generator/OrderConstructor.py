@@ -4,7 +4,6 @@ from generator.CurrencyPairGenerator import CurrencyPairGenerator
 from generator.DescriptionGenerator import DescriptionGenerator
 from generator.DirectionGenerator import DirectionGenerator
 from generator.IdGenerator import IdGenerator
-from generator.PriceDeviationGenerator import PriceDeviationGenerator
 from generator.TagGenerator import TagGenerator
 from generator.TimestampGenerator import TimestampGenerator
 from generator.VolumeGenerator import VolumeGenerator
@@ -21,7 +20,7 @@ class OrderConstructor:
         self.__days_amount = gen_settings[GenSettingsKeys.days_amount]
         self.__init_date = gen_settings[GenSettingsKeys.date]
         self.__volume_precision = gen_settings[GenSettingsKeys.volume_precision]
-        self.__directions = gen_settings[GenSettingsKeys.direction]
+
 
     def setup_generators(self, x, y, a, c, m, t0):
         """
@@ -75,7 +74,7 @@ class OrderConstructor:
             order = Order(id = self.order_id_generator.__next__(),
                           position = position,
                           currency_pair = currency_pair,
-                          direction = self.__directions[self.direction_generator.__next__()],
+                          direction = self.direction_generator.__next__(),
                           description = self.__descriptions[self.description_generator.__next__()],
                           tags = self.__get_tags_string(self.tag_generator.__next__(), ' '),
                           initial_timestamp = self.timestamp_generator.__next__(),

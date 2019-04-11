@@ -15,32 +15,38 @@ class MySQLService(DataBase):
 
     def execute_query(self, query, params=None, attempts=3, delay=0.5, instant_connection_attempts=False, commit=True, fetch=False):
         if self.__connection.is_connected():
+            try:
 
-            connector = self.__connection.get_instance()
+                connector = self.__connection.get_instance()
 
-            cursor = connector.cursor()
+                cursor = connector.cursor()
 
-            result = self.__execute(connector, cursor, query, commit, fetch)
+                result = self.__execute(connector, cursor, query, commit, fetch)
 
-            cursor.close()
+                cursor.close()
 
-            if not self.__keep_connection_open:
-                connector.close()
+                if not self.__keep_connection_open:
+                    connector.close()
 
-            if fetch:
-                return result
+                if fetch:
+                    return result
+            except:
+                return self.__safety_execute(query, params, instant_connection_attempts, delay, attempts, commit, fetch)
         else:
-            if self.__connection.get_instance() is not None:
-                self._logger.log_error("MySQL connection dropped. Try to reconnect...")
-            connection_opened = False
-            if instant_connection_attempts:
-                while not connection_opened:
-                    connection_opened = self.__connection.try_open(attempts=1, delay=delay, loop=True)
-            else:
-                connection_opened = self.__connection.try_open(attempts=attempts, delay=delay, loop=False)
+            return self.__safety_execute(query, params, instant_connection_attempts, delay, attempts, commit, fetch)
 
-            if connection_opened:
-                return self.execute_query(query, params, attempts, delay, instant_connection_attempts, commit, fetch)
+    def __safety_execute(self, query, params, instant_connection_attempts, delay, attempts, commit, fetch):
+        if self.__connection.get_instance() is not None:
+            self._logger.log_error("MySQL connection dropped. Try to reconnect...")
+        connection_opened = False
+        if instant_connection_attempts:
+            while not connection_opened:
+                connection_opened = self.__connection.try_open(attempts=1, delay=delay, loop=True)
+        else:
+            connection_opened = self.__connection.try_open(attempts=attempts, delay=delay, loop=False)
+
+        if connection_opened:
+            return self.execute_query(query, params, attempts, delay, instant_connection_attempts, commit, fetch)
 
     def __execute(self, connector, cursor, query, commit, fetch):
         try:

@@ -16,7 +16,7 @@ class OrderRecordConstructor:
         self.__orders_amount = gen_settings[GenSettingsKeys.orders_amount]
         self.__id_length = gen_settings[GenSettingsKeys.id_length]
         self.__init_date = gen_settings[GenSettingsKeys.date]
-        self.__statuses = gen_settings[GenSettingsKeys.statuses]
+
         self.__weekends = gen_settings[GenSettingsKeys.weekends]
         self.__days_amount = gen_settings[GenSettingsKeys.days_amount]
         self.__price_precision = gen_settings[GenSettingsKeys.price_precision]
@@ -59,7 +59,7 @@ class OrderRecordConstructor:
                 length=self.__orders_amount * 3, x=x, y=y, a=a, c=c, m=m, t0=t0)
 
             self.last_status_generator = LastStatusGenerator(self.__logger).get_sequence(
-                length=self.__orders_amount * 3, statuses=self.__statuses, x=x, y=y, a=a, c=c, m=m, t0=t0)
+                length=self.__orders_amount * 3, x=x, y=y, a=a, c=c, m=m, t0=t0)
 
             self.price_deviation_generator = PriceDeviationGenerator(self.__logger,
                                                                      price_precision=self.__price_precision).get_sequence(
@@ -82,9 +82,9 @@ class OrderRecordConstructor:
         'Rejected/Partial filled/Filled' : initial date + additive
         """
         date_additive = self.timestamp_add_ms_generator.__next__()
-        if status == self.__statuses[0]:
+        if status == 0:
             initial_timestamp -= date_additive
-        elif status in self.__statuses[2:4]:
+        elif status in [2, 3, 4]:
             initial_timestamp += date_additive
         return initial_timestamp
 
@@ -95,14 +95,14 @@ class OrderRecordConstructor:
         try:
             timestamp = round(self.__get_status_timestamp(status, order.get_initial_timestamp()), 3)
             if self.__is_weekend(timestamp):
-                if status != self.__statuses[0]:
+                if status != 0:
                     old_timestamp = timestamp
                     while self.__is_weekend(timestamp):
                         timestamp += 86400
                     self.__logger.log_trace(
                         "[OrderRecordGen][{}] Add {} sec to timestamp: {}. Previous value {} was a weekend".format
                         (order["id"], timestamp - old_timestamp, timestamp, old_timestamp))
-            result = OrderRecord(id=self.order_record_id_generator.__next__(),
+            result = OrderRecord(
                                  order=order,
                                  timestamp=timestamp,
                                  status=status,
@@ -125,9 +125,9 @@ class OrderRecordConstructor:
         fill_price = order.get_init_price() + price_additive
         fill_volume = order.get_init_volume() * price_diff
 
-        if status == self.__statuses[4]:
+        if status == 5:
             return order.get_init_price(), order.get_init_volume()
-        elif status == self.__statuses[3]:
+        elif status == 4:
             fill_price = round(fill_price, self.__price_precision)
             fill_volume = round(fill_volume, self.__volume_precision)
 
@@ -152,7 +152,7 @@ class OrderRecordConstructor:
             result = []
             result.append(self.__generate_status_data(self.last_status_generator.__next__(), order, "red"))
             if order.get_position() > self.one_state_red_finish:
-                result.append(self.__generate_status_data(self.__statuses[1], order, "red"))
+                result.append(self.__generate_status_data(2, order, "red"))
         except Exception as ex:
             raise ex
         else:
@@ -163,8 +163,8 @@ class OrderRecordConstructor:
         Creates 3 order notes with statuses 'new', 'to_provider' and 'rejected/filled/p_filled'
         """
         try:
-            result = [self.__generate_status_data(self.__statuses[0], order, "green"),
-                      self.__generate_status_data(self.__statuses[1], order, "green"),
+            result = [self.__generate_status_data(1, order, "green"),
+                      self.__generate_status_data(2, order, "green"),
                       self.__generate_status_data(self.last_status_generator.__next__(), order, "green")]
         except Exception as ex:
             raise ex
@@ -180,9 +180,9 @@ class OrderRecordConstructor:
         """
         try:
             result = []
-            result.append(self.__generate_status_data(self.__statuses[0], order, "blue"))
+            result.append(self.__generate_status_data(1, order, "blue"))
             if order.get_position() <= self.one_state_blue_start:
-                result.append(self.__generate_status_data(self.__statuses[1], order, "blue"))
+                result.append(self.__generate_status_data(2, order, "blue"))
         except Exception as ex:
             raise ex
         else:

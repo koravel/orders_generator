@@ -81,3 +81,6 @@ class ThreadPool:
         if self.__threads[name] is not None:
             if not self.__threads[name].isAlive():
                 self.__threads[name].join()
+
+    def get_threads(self):
+        return self.__threads

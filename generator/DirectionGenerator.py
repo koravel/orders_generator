@@ -9,6 +9,6 @@ class DirectionGenerator(BinGenerator):
         """
         try:
             for i in super(DirectionGenerator, self).get_sequence(length, x, y):
-                yield i
+                yield i + 1
         except Exception as ex:
             raise ex

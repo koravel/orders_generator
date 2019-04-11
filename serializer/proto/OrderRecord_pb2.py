@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='tutorial',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x11OrderRecord.proto\x12\x08tutorial\"\xfb\x01\n\x0bOrderRecord\x12\n\n\x02id\x18\x01 \x02(\x04\x12\x10\n\x08order_id\x18\x02 \x02(\x04\x12\x11\n\ttimestamp\x18\x03 \x02(\x03\x12\x0e\n\x06status\x18\x04 \x02(\t\x12\x15\n\rcurrency_pair\x18\x05 \x02(\t\x12\x11\n\tdirection\x18\x06 \x02(\t\x12\x12\n\ninit_price\x18\x07 \x02(\x01\x12\x12\n\nfill_price\x18\x08 \x02(\x01\x12\x13\n\x0binit_volume\x18\t \x02(\x01\x12\x13\n\x0b\x66ill_volume\x18\n \x02(\x01\x12\x0c\n\x04tags\x18\x0b \x02(\t\x12\x13\n\x0b\x64\x65scription\x18\x0c \x02(\t\x12\x0c\n\x04zone\x18\r \x02(\t')
+  serialized_pb=_b('\n\x11OrderRecord.proto\x12\x08tutorial\"\xef\x01\n\x0bOrderRecord\x12\x10\n\x08order_id\x18\x02 \x02(\x04\x12\x11\n\ttimestamp\x18\x03 \x02(\x03\x12\x0e\n\x06status\x18\x04 \x02(\x05\x12\x15\n\rcurrency_pair\x18\x05 \x02(\t\x12\x11\n\tdirection\x18\x06 \x02(\x05\x12\x12\n\ninit_price\x18\x07 \x02(\x01\x12\x12\n\nfill_price\x18\x08 \x02(\x01\x12\x13\n\x0binit_volume\x18\t \x02(\x01\x12\x13\n\x0b\x66ill_volume\x18\n \x02(\x01\x12\x0c\n\x04tags\x18\x0b \x02(\t\x12\x13\n\x0b\x64\x65scription\x18\x0c \x02(\t\x12\x0c\n\x04zone\x18\r \x02(\t')
 )
 
 
@@ -34,91 +34,84 @@ _ORDERRECORD = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='id', full_name='tutorial.OrderRecord.id', index=0,
-      number=1, type=4, cpp_type=4, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='order_id', full_name='tutorial.OrderRecord.order_id', index=1,
+      name='order_id', full_name='tutorial.OrderRecord.order_id', index=0,
       number=2, type=4, cpp_type=4, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='timestamp', full_name='tutorial.OrderRecord.timestamp', index=2,
+      name='timestamp', full_name='tutorial.OrderRecord.timestamp', index=1,
       number=3, type=3, cpp_type=2, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='status', full_name='tutorial.OrderRecord.status', index=3,
-      number=4, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='status', full_name='tutorial.OrderRecord.status', index=2,
+      number=4, type=5, cpp_type=1, label=2,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='currency_pair', full_name='tutorial.OrderRecord.currency_pair', index=4,
+      name='currency_pair', full_name='tutorial.OrderRecord.currency_pair', index=3,
       number=5, type=9, cpp_type=9, label=2,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='direction', full_name='tutorial.OrderRecord.direction', index=5,
-      number=6, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='direction', full_name='tutorial.OrderRecord.direction', index=4,
+      number=6, type=5, cpp_type=1, label=2,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='init_price', full_name='tutorial.OrderRecord.init_price', index=6,
+      name='init_price', full_name='tutorial.OrderRecord.init_price', index=5,
       number=7, type=1, cpp_type=5, label=2,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='fill_price', full_name='tutorial.OrderRecord.fill_price', index=7,
+      name='fill_price', full_name='tutorial.OrderRecord.fill_price', index=6,
       number=8, type=1, cpp_type=5, label=2,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='init_volume', full_name='tutorial.OrderRecord.init_volume', index=8,
+      name='init_volume', full_name='tutorial.OrderRecord.init_volume', index=7,
       number=9, type=1, cpp_type=5, label=2,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='fill_volume', full_name='tutorial.OrderRecord.fill_volume', index=9,
+      name='fill_volume', full_name='tutorial.OrderRecord.fill_volume', index=8,
       number=10, type=1, cpp_type=5, label=2,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='tags', full_name='tutorial.OrderRecord.tags', index=10,
+      name='tags', full_name='tutorial.OrderRecord.tags', index=9,
       number=11, type=9, cpp_type=9, label=2,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='description', full_name='tutorial.OrderRecord.description', index=11,
+      name='description', full_name='tutorial.OrderRecord.description', index=10,
       number=12, type=9, cpp_type=9, label=2,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='zone', full_name='tutorial.OrderRecord.zone', index=12,
+      name='zone', full_name='tutorial.OrderRecord.zone', index=11,
       number=13, type=9, cpp_type=9, label=2,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -137,7 +130,7 @@ _ORDERRECORD = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=32,
-  serialized_end=283,
+  serialized_end=271,
 )
 
 DESCRIPTOR.message_types_by_name['OrderRecord'] = _ORDERRECORD

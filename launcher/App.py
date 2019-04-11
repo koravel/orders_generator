@@ -241,7 +241,6 @@ class App:
         return App.__mysql_service.select(params="count(*)", location=App.__table, conditions="status=\'{}\'".format(status))[0][0]
 
     __order_fields = [
-        "id",
         "order_id",
         "status",
         "timestamp",
@@ -263,7 +262,6 @@ class App:
         order_record = OrderRecord()
         order_record.ParseFromString(body)
         values = [
-            order_record.id,
             order_record.order_id,
             order_record.status,
             order_record.timestamp,
@@ -287,11 +285,11 @@ class App:
             except:
                 App.__logger.log_error()
             else:
-                App.__data_collector.set_data(ReportDataKeys.mysql_new, App.get_status_count("New"))
-                App.__data_collector.set_data(ReportDataKeys.mysql_to_provider, App.get_status_count("To provider"))
-                App.__data_collector.set_data(ReportDataKeys.mysql_rejected, App.get_status_count("Reject"))
-                App.__data_collector.set_data(ReportDataKeys.mysql_partial_filled, App.get_status_count("Partial filled"))
-                App.__data_collector.set_data(ReportDataKeys.mysql_filled, App.get_status_count("Filled"))
+                App.__data_collector.set_data(ReportDataKeys.mysql_new, App.get_status_count(1))
+                App.__data_collector.set_data(ReportDataKeys.mysql_to_provider, App.get_status_count(2))
+                App.__data_collector.set_data(ReportDataKeys.mysql_rejected, App.get_status_count(3))
+                App.__data_collector.set_data(ReportDataKeys.mysql_partial_filled, App.get_status_count(4))
+                App.__data_collector.set_data(ReportDataKeys.mysql_filled, App.get_status_count(5))
 
                 if App.__thread_pool.get_data("consumed_messages") >= App.__thread_pool.get_data("order_records_amount"):
                     App.report()
@@ -321,6 +319,8 @@ class App:
 
     @staticmethod
     def finalize(config):
+        for thread_name in App.__thread_pool.get_threads().keys():
+            App.__thread_pool.join_thread(thread_name)
         App.__path_provider.save(config.pathes)
         App.__settings_provider.save(config.settings)
         App.__gen_settings_provider.save(config.gen_settings)

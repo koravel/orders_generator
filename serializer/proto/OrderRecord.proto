@@ -4,12 +4,11 @@ package tutorial;
 
 message OrderRecord
 {
-    required uint64 id = 1;
     required uint64 order_id = 2;
     required int64 timestamp = 3;
-    required string status = 4;
+    required int32 status = 4;
     required string currency_pair = 5;
-    required string direction = 6;
+    required int32 direction = 6;
     required double init_price = 7;
     required double fill_price = 8;
     required double init_volume = 9;
