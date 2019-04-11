@@ -76,7 +76,9 @@ python ./Main.py
 - connection settings to services
 - log output
 - etc.  
+
 #Settings
+
 ```
 Pathes config'pathes.json' by default. 
 This file generates automatically after first launch.
