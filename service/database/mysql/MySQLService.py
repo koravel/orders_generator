@@ -13,7 +13,7 @@ class MySQLService(DataBase):
         self.__keep_connection_open = keep_connection_open
         self._logger = logger
 
-    def execute_query(self, query, params=None, attempts=3, delay=0.5, instant_connection_attempts=False, commit=True, fetch=False):
+    def execute_query(self, query, params=None, attempts=3, delay=0.5, instant_connection_attempts=False, commit=False, fetch=False):
         if self.__connection.is_connected():
             try:
 

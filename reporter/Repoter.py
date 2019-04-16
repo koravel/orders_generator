@@ -63,24 +63,20 @@ class Reporter:
         return "RabbitMQ Consumer:\nconsumed: {}".format(consumed)
 
     def get_mysql_saving_text(self):
-        sum = self.__data[ReportDataKeys.mysql_new] + \
-              self.__data[ReportDataKeys.mysql_to_provider] + \
-              self.__data[ReportDataKeys.mysql_rejected] + \
-              self.__data[ReportDataKeys.mysql_partial_filled] + \
-              self.__data[ReportDataKeys.mysql_filled]
+        sum = self.__data[ReportDataKeys.mysql_red] + \
+              self.__data[ReportDataKeys.mysql_green] + \
+              self.__data[ReportDataKeys.mysql_blue]
 
         return self._get_mysql_saving_text(
-            new=self.__data[ReportDataKeys.mysql_new],
-            to_provider=self.__data[ReportDataKeys.mysql_to_provider],
-            rejected=self.__data[ReportDataKeys.mysql_rejected],
-            part_filled=self.__data[ReportDataKeys.mysql_partial_filled],
-            filled=self.__data[ReportDataKeys.mysql_filled],
+            red=self.__data[ReportDataKeys.mysql_red],
+            green=self.__data[ReportDataKeys.mysql_green],
+            blue=self.__data[ReportDataKeys.mysql_blue],
             total_saved=sum
         )
 
-    def _get_mysql_saving_text(self, new, to_provider, rejected, part_filled, filled, total_saved):
-        return "MySQL saving:\nNew: {}\nTo Provider: {}\nRejected: {}\nPartial filled: {}\nFilled: {}\nTotal saved: {}\n".\
-            format(new, to_provider, rejected, part_filled, filled, total_saved)
+    def _get_mysql_saving_text(self, red, green, blue, total_saved):
+        return "MySQL saving:\nRed: {}\nGreen: {}\nBlue: {}\nTotal saved: {}\n".\
+            format(red, green, blue, total_saved)
 
     def __get_time_text(self, title, amount, avg, min, max, total):
         return "-{}: {}\navg: {} ms\nmin: {} ms\nmax: {} ms\nTotal: {} ms\n".format(title, amount, avg, min, max, total)

@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime
 
 from reporter.Repoter import Reporter
@@ -41,8 +42,6 @@ class App:
     __exchange_name = ""
     __exchange_mode = ""
     __queues = ""
-
-    __table = ""
 
     __sql_batch_buffer = []
     __batch_amount = 0
@@ -109,9 +108,15 @@ class App:
         App.__thread_pool.setup(config.settings[SettingsKeys.system][SettingsKeys.threads_max])
         App.__thread_pool.add_data("consumed_messages", 0)
 
-        thread = TaskThread("rabbit_consuming", App.__thread_pool, App.__logger)
-        thread.setup(task=App.__consuming)
-        App.__thread_pool.add_thead(thread=thread)
+        consume_thread = TaskThread("rabbit_consuming", App.__thread_pool, App.__logger)
+        mysql_thread = TaskThread("mysql_writing", App.__thread_pool, App.__logger)
+        report_thread = TaskThread("reporting", App.__thread_pool, App.__logger)
+        consume_thread.setup(task=App.__consuming)
+        mysql_thread.setup(task=App.__writing_to_mysql)
+        report_thread.setup(task=App.__reporting)
+        App.__thread_pool.add_thead(thread=consume_thread)
+        App.__thread_pool.add_thead(thread=mysql_thread)
+        App.__thread_pool.add_thead(thread=report_thread)
 
     @staticmethod
     def setup_services(config):
@@ -176,21 +181,17 @@ class App:
         timer = datetime.now()
         for record in order_record_sequence:
             records.append(record)
-
+            App.__data_collector.update_zone_data(timer, record.get_zone())
             if len(records) == App.__batch_amount and counter > 0:
                 counter -= 1
 
                 yield records
                 records = []
 
-            App.__data_collector.update_zone_data(timer, record.get_zone())
-
             timer = datetime.now()
 
         if len(records) > 0:
             yield records
-
-        App.report()
 
     @staticmethod
     def to_file(config, orders, file_name):
@@ -236,10 +237,6 @@ class App:
         for record in proto_records:
             App.__rabbitmq_service.send_message(App.__exchange_name, record.zone, record.SerializeToString())
 
-    @staticmethod
-    def get_status_count(status):
-        return App.__mysql_service.select(params="count(*)", location=App.__table, conditions="status=\'{}\'".format(status))[0][0]
-
     __order_fields = [
         "order_id",
         "status",
@@ -255,7 +252,7 @@ class App:
     ]
 
     @staticmethod
-    def mysql_callback(ch, method, properties, body):
+    def __consume_callback(ch, method, properties, body):
         App.__thread_pool.update_data("consumed_messages", App.__thread_pool.get_data("consumed_messages") + 1)
         App.__data_collector.set_data(ReportDataKeys.rabbit_consumed,
                                       App.__data_collector.get_data(ReportDataKeys.rabbit_consumed) + 1)
@@ -276,35 +273,58 @@ class App:
         ]
         App.__sql_batch_buffer.append(values)
 
-        if (len(App.__sql_batch_buffer) == App.__batch_amount and App.__mysql_butches_counter > 0)\
-                or (len(App.__sql_batch_buffer) == App.last_batch_amount and App.__mysql_butches_counter == 0):
-            App.__mysql_butches_counter -= 1
-            try:
-                App.__mysql_service.insert_many(location=App.__table, fields=App.__order_fields, values=App.__sql_batch_buffer)
-                App.__sql_batch_buffer.clear()
-            except:
-                App.__logger.log_error()
-            else:
-                App.__data_collector.set_data(ReportDataKeys.mysql_new, App.get_status_count(1))
-                App.__data_collector.set_data(ReportDataKeys.mysql_to_provider, App.get_status_count(2))
-                App.__data_collector.set_data(ReportDataKeys.mysql_rejected, App.get_status_count(3))
-                App.__data_collector.set_data(ReportDataKeys.mysql_partial_filled, App.get_status_count(4))
-                App.__data_collector.set_data(ReportDataKeys.mysql_filled, App.get_status_count(5))
-
-                if App.__thread_pool.get_data("consumed_messages") >= App.__thread_pool.get_data("order_records_amount"):
-                    App.report()
-                    App.__rabbitmq_service.stop_consuming()
-
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
-    @staticmethod
-    def from_rabbit_to_mysql(config):
-        App.__table = config.settings[SettingsKeys.mysql][SettingsKeys.order_table]
+    __table = ""
 
+    @staticmethod
+    def get_db_info():
+        from tracking import select_report_data_query
+        return App.__mysql_service.execute_query(query=select_report_data_query, fetch=True)
+
+    @staticmethod
+    def __batch_to_mysql():
+        try:
+            App.__mysql_service.insert_many(location=App.__table, fields=App.__order_fields, values=App.__sql_batch_buffer[0:App.__batch_amount])
+            App.__sql_batch_buffer = App.__sql_batch_buffer[App.__batch_amount:]
+        except:
+            App.__logger.log_error()
+        else:
+
+            db_info = App.get_db_info()
+            App.__data_collector.set_data(ReportDataKeys.mysql_red, db_info[0][0] + db_info[0][1])
+            App.__data_collector.set_data(ReportDataKeys.mysql_blue, db_info[0][2] + db_info[0][3])
+            App.__data_collector.set_data(ReportDataKeys.mysql_green, db_info[0][4])
+            App.__data_collector.set_data(ReportDataKeys.mysql_total, db_info[0][5])
+
+    @staticmethod
+    def __writing_to_mysql(events, data, logger):
+        while True:
+            time.sleep(0.5)
+            if len(App.__sql_batch_buffer) > 0:
+                App.__batch_to_mysql()
+
+    @staticmethod
+    def start_writing_to_mysql(config):
+        App.__table = config.settings[SettingsKeys.mysql][SettingsKeys.order_table]
+        App.__thread_pool.start_thread("mysql_writing")
+
+    @staticmethod
+    def start_rabbit_consuming():
         for queue_name in App.__queues:
-            App.__rabbitmq_service.consume_message(queue_name=queue_name, on_consume_callback=App.mysql_callback)
+            App.__rabbitmq_service.consume_message(queue_name=queue_name, on_consume_callback=App.__consume_callback)
 
         App.__thread_pool.start_thread("rabbit_consuming")
+
+    @staticmethod
+    def start_reporting():
+        App.__thread_pool.start_thread("reporting")
+
+    @staticmethod
+    def __reporting(events, data, logger):
+        while True:
+            time.sleep(5)
+            App.report()
 
     @staticmethod
     def __consuming(events, data, logger):
@@ -313,6 +333,7 @@ class App:
 
     @staticmethod
     def report():
+
         result = App.__reporter.get_report()
 
         App.__logger.log_info(result)

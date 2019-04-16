@@ -33,8 +33,9 @@ class CRUDService(MySQLService, CRUD):
             _values += "({}),".format(value_row[:-1])
 
         query = "insert into {} ({}) values{};".format(location, _fields[:-1], _values[:-1])
+
         try:
-            super().execute_query(query=query, delay=self.__delay, attempts=self.__attempts,
+            super().execute_query(query=query, delay=self.__delay, attempts=self.__attempts, commit=True,
                                   instant_connection_attempts=self.__instant_connection_attempts)
         except Exception as ex:
             raise ex
@@ -69,16 +70,19 @@ class CRUDService(MySQLService, CRUD):
 
         query = "update {} set {} where {};".format(location, set_text, conditions)
 
-        super().execute_query(query=query, delay=self.__delay, attempts=self.__attempts,
+        super().execute_query(query=query, delay=self.__delay, attempts=self.__attempts, commit=True,
                               instant_connection_attempts=self.__instant_connection_attempts)
 
     def delete(self, location, conditions):
         query = "delete from {} where {};".format(location, conditions)
 
-        super().execute_query(query=query, delay=self.__delay, attempts=self.__attempts,
+        super().execute_query(query=query, delay=self.__delay, attempts=self.__attempts, commit=True,
                               instant_connection_attempts=self.__instant_connection_attempts)
 
-    def select(self, params, location, conditions):
-        query = "select {} from {} where {};".format(params, location, conditions)
+    def select(self, params, location, conditions=None):
+        query = "select {} from {}".format(params, location)
+        if conditions is not None:
+            query = "{} where {}".format(query, conditions)
+        query += ';'
 
         return super().execute_query(query=query, commit=False, fetch=True)
