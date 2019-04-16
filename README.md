@@ -29,40 +29,12 @@ More detailed info will be added later.
 
 2. Do not delete root.py - file indicates root of app to all components
 
-3. If settings.json empty or not presented, settings-default.json is used insead
-
-4. If settings.json empty or not presented, settings-default.json is used insead
-
 # How to launch
 
-1. Create MySQL table from file ./init.sql
+1. Create MySQL tables from file ./init.sql
 2. Download required python packages by requirements.txt:
 ```
 pip install -r ./requirements.txt
-```
- 
- or by command line with pip:
-
-* Windows
-
-```
-pip install mysql-connector-python
-pip install pika
-pip install protobuf
-```
-
-* Linux
-
-```
-sudo pip3 install mysql-connector-python
-sudo pip3 install pika
-sudo pip3 install protobuf
-
-or
-
-sudo apt-get install mysql-connector-python
-sudo apt-get install pika
-sudo apt-get install protobuf
 ```
 3 . Launch by command:
 ```
@@ -76,12 +48,13 @@ python ./Main.py
 - connection settings to services
 - log output
 - etc.  
+
 #Settings
-```
-Pathes config'pathes.json' by default. 
+1. Pathes config'pathes.json' by default. 
 This file generates automatically after first launch.
 Primary loaded file. Delete only if you want to reconfigure it. 
 
+```
 {
     "DEFAULT_SETTINGS": {
         "is_remote": false,
@@ -95,8 +68,9 @@ Primary loaded file. Delete only if you want to reconfigure it.
 }
 
 ```
+2 . Common settings. Lots of options here.
 ```
-Common settings.
+
 
 {
     "logging": { 
@@ -149,7 +123,7 @@ Common settings.
 }
 ```
 
-Generators settings - 'gen-settings.json'. Here you can change parameters
+3 . Generators settings - 'gen-settings.json'. Here you can change parameters
 to generate different data. 
 
 Feel free to modify app)
