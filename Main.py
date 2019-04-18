@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from launcher.App import App
 
 
@@ -10,6 +8,7 @@ class Main:
     @staticmethod
     def initialize():
         Main.config = App.initialize()
+        App.setup_services(Main.config)
 
     @staticmethod
     def run():

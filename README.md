@@ -31,6 +31,19 @@ More detailed info will be added later.
 
 # How to launch
 
+## Docker
+```yml
+docker image pull rabbitmq:3.7.14-management-alpine
+docker image pull python:3.7.3-alpine3.9
+docker image pull mysql:8.0
+
+docker network create -d bridge --subnet 192.168.0.0/24 --gateway 192.168.0.1 localnet
+docker-compose up
+docker network inspect localnet - get host for services here
+docker build -t order_gen .
+docker run -it --network localnet order_gen
+```
+
 1. Create MySQL tables from file ./init.sql
 2. Download required python packages by requirements.txt:
 ```

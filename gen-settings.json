@@ -50,8 +50,8 @@
         "Blue": 0.6,
         "Red": 0.4
     },
-    "orders_amount": 2000,
-    "portion_amount": 500,
+    "orders_amount": 10000,
+    "portion_amount": 1000,
     "price_precision": 5,
     "statuses": [
         "New",

@@ -4,7 +4,7 @@ from util.connection.ServiceConnection import ServiceConnection
 
 
 class RabbitMQConnection(ServiceConnection):
-    def __init__(self, host, port, vhost, user, password, logger, retry_amount=1, retry_timeout=0.001):
+    def __init__(self, host, port, vhost, user, password, logger, retry_amount=10, retry_timeout=6.0):
         self.__host = host
         self.__port = port
         self.__vhost = vhost
@@ -17,12 +17,13 @@ class RabbitMQConnection(ServiceConnection):
     def open(self, *args):
         try:
             credentials = pika.PlainCredentials(self.__user, self.__password)
-            self.__instance = pika.BlockingConnection(
-                pika.ConnectionParameters(
+            params = pika.ConnectionParameters(
                     host=self.__host, virtual_host=self.__vhost, credentials=credentials,
-                    connection_attempts=self.__retry_amount, stack_timeout=self.__retry_timeout))
+                    connection_attempts=self.__retry_amount, stack_timeout=self.__retry_timeout)
+
+            self.__instance = pika.BlockingConnection(params)
         except:
-            self.__logger.log_error("RabbitMQ connection not established with params\n[{}]".format(self.__params_to_str()))
+            raise ConnectionError("RabbitMQ connection not established with params\n[{}]".format(self.__params_to_str()))
         else:
             self.__logger.log_info("RabbitMQ connection established with params\n[{}]".format(self.__params_to_str()))
 

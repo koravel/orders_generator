@@ -47,7 +47,6 @@ class App:
     __batch_amount = 0
     last_batch_amount = 0
     __whole_butches_amount = 0
-    __mysql_butches_counter = 0
 
     @staticmethod
     def initialize():
@@ -86,7 +85,6 @@ class App:
         config.gen_settings = App.__gen_settings_provider.load()
 
         App.__logger = logger
-        App.setup_services(config)
         App.setup_thread_pool(config)
 
         App.__data_collector = ReportDataCollector()
@@ -95,10 +93,6 @@ class App:
         App.__reporter = Reporter(App.__data_collector.data)
 
         App.__batch_amount = config.gen_settings[GenSettingsKeys.portion_amount]
-
-        if config.settings[SettingsKeys.system]["clear"]:
-            from launcher import clear_services
-            clear_services(config, logger)
 
         return config
 
@@ -154,6 +148,10 @@ class App:
             instant_connection_attempts=config.settings[SettingsKeys.mysql][SettingsKeys.instant_connection_attempts],
             logger=App.__logger
         )
+
+        if config.settings[SettingsKeys.system]["clear"]:
+            from launcher import clear_services
+            clear_services(config, App.__mysql_service, App.__rabbitmq_service)
 
     @staticmethod
     def generate(config):
@@ -285,17 +283,23 @@ class App:
     @staticmethod
     def __batch_to_mysql():
         try:
-            App.__mysql_service.insert_many(location=App.__table, fields=App.__order_fields, values=App.__sql_batch_buffer[0:App.__batch_amount])
-            App.__sql_batch_buffer = App.__sql_batch_buffer[App.__batch_amount:]
+            if len(App.__sql_batch_buffer) >= App.__batch_amount:
+                amount = App.__batch_amount
+            else:
+                amount = len(App.__sql_batch_buffer)
+
+            App.__mysql_service.insert_many(location=App.__table, fields=App.__order_fields, values=App.__sql_batch_buffer[:amount])
+            App.__sql_batch_buffer = App.__sql_batch_buffer[amount:]
         except:
             App.__logger.log_error()
         else:
 
             db_info = App.get_db_info()
-            App.__data_collector.set_data(ReportDataKeys.mysql_red, db_info[0][0] + db_info[0][1])
-            App.__data_collector.set_data(ReportDataKeys.mysql_blue, db_info[0][2] + db_info[0][3])
-            App.__data_collector.set_data(ReportDataKeys.mysql_green, db_info[0][4])
-            App.__data_collector.set_data(ReportDataKeys.mysql_total, db_info[0][5])
+            if db_info is not None:
+                App.__data_collector.set_data(ReportDataKeys.mysql_red, db_info[0][0] + db_info[0][1])
+                App.__data_collector.set_data(ReportDataKeys.mysql_blue, db_info[0][2] + db_info[0][3])
+                App.__data_collector.set_data(ReportDataKeys.mysql_green, db_info[0][4])
+                App.__data_collector.set_data(ReportDataKeys.mysql_total, db_info[0][5])
 
     @staticmethod
     def __writing_to_mysql(events, data, logger):
@@ -328,12 +332,10 @@ class App:
 
     @staticmethod
     def __consuming(events, data, logger):
-        App.__mysql_butches_counter = App.__whole_butches_amount
         App.__rabbitmq_service.start_consuming()
 
     @staticmethod
     def report():
-
         result = App.__reporter.get_report()
 
         App.__logger.log_info(result)

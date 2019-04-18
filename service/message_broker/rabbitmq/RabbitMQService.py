@@ -1,34 +1,17 @@
-from collections import deque
+import pika
 
 from service.message_broker.MessageBroker import MessageBroker
 from service.message_broker.MessageBrokerQueueing import MessageBrokerQueueing
 from service.message_broker.MessageBrokerRouting import MessageBrokerRouting
-#from threading.TaskThread import TaskThread
-from service.message_broker.rabbitmq.RMQMessage import RMQMessage
 
 
 class RabbitMQService(MessageBroker, MessageBrokerQueueing, MessageBrokerRouting):
-    def __init__(self, connection, logger, thread_pool=None, enable_cache=False, message_ttl=0):
+    def __init__(self, connection, logger):
         self.__connection = connection
         self.__logger = logger
-        self.__connection.open()
-        self.__enable_cache = enable_cache
-        self.__message_ttl = message_ttl
-        self.__cache = deque()
-            
-        if enable_cache:
-            #self.__cache_thread = TaskThread("rabbitmq_caching", thread_pool, logger)
-            self.__cache_thread.setup(self.__cache_task())
 
         self.__connection.open()
         self.__channel = self.__connection.get_instance().channel()
-        
-    def __cache_task(self):
-        #modify to work with multiple queues
-        while True:
-            if not self.is_queue_full():
-                rmq_message = self.__cache.popleft()
-                self.send_message(rmq_message.message, rmq_message.exchange, rmq_message.routing_key)
 
     def is_queue_full(self, routing_key):
         pass
@@ -36,24 +19,33 @@ class RabbitMQService(MessageBroker, MessageBrokerQueueing, MessageBrokerRouting
     def close_channel(self):
         self.__channel.close()
 
-    def __add_message_to_cache(self, message, exchange, routing_key):
-        rmq_message = RMQMessage(message, exchange, routing_key, self.__message_ttl)
-        self.__cache.append(rmq_message)
-        self.__logger.log_debug("|add message:'{}' with routing_key:{} to cache".format(
-            rmq_message.message, rmq_message.routing_key))
-        self.__logger.log_trace("|expire at {}".format(rmq_message.expired_at))
-
     def send_message(self, exchange, routing_key, message):
-        try:
-            if self.__channel.basic_publish(
-                    exchange=exchange, routing_key=routing_key, body=message, mandatory=self.__enable_cache):
-                self.__add_message_to_cache(message, exchange, routing_key)
-        except Exception as ex:
-            self.__add_message_to_cache(message, exchange, routing_key)
+        sended = False
+        while not sended:
+            reconnect = False
+            try:
+                if self.__channel.basic_publish(
+                        exchange=exchange, routing_key=routing_key, body=message, mandatory=True,
+                        properties=pika.BasicProperties(
+                            delivery_mode=2
+                        )
+                ) is None:
+                    sended = True
+            except:
+                reconnect = True
+
+            if reconnect:
+                try:
+                    self.__connection.open()
+                except:
+                    self.__logger.log_error("Could not connect to rabbitMQ")
+                else:
+                    self.__channel = self.__connection.get_instance().channel()
+
 
     def declare_queue(self, queue_name, channel_number=0):
         self.__logger.log_debug("Declaring queue with name {} ...".format(queue_name))
-        return self.__channel.queue_declare(queue=queue_name)
+        return self.__channel.queue_declare(queue=queue_name, durable=True)
 
     def bind_queue(self, queue_name, exchange_name, routing_key=None, channel_number=0):
         self.__logger.log_debug("Binding queue {} to exchange {} with routing key {} ...".format(queue_name, exchange_name,
@@ -128,10 +120,38 @@ class RabbitMQService(MessageBroker, MessageBrokerQueueing, MessageBrokerRouting
         return self.__channel.exchange_unbind(destination=destination, source=source, routing_key=routing_key)
 
     def consume_message(self, queue_name, on_consume_callback):
-        self.__channel.basic_consume(queue=queue_name, on_message_callback=on_consume_callback)
+        consume_ok = False
+        while not consume_ok:
+            reconnect = False
+            try:
+                self.__channel.basic_consume(queue=queue_name, on_message_callback=on_consume_callback, auto_ack=False)
+                consume_ok = True
+            except:
+                reconnect = True
+
+            if reconnect:
+                try:
+                    self.__connection.open()
+                except:
+                    self.__logger.log_error("Could not connect to rabbitMQ")
+                else:
+                    self.__channel = self.__connection.get_instance().channel()
 
     def start_consuming(self):
-        self.__channel.start_consuming()
+        while True:
+            reconnect = False
+            try:
+                self.__channel.start_consuming()
+            except:
+                reconnect = True
+
+            if reconnect:
+                try:
+                    self.__connection.open()
+                except:
+                    self.__logger.log_error("Could not connect to rabbitMQ")
+                else:
+                    self.__channel = self.__connection.get_instance().channel()
 
     def stop_consuming(self):
         self.__channel.stop_consuming()

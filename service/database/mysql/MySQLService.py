@@ -61,8 +61,7 @@ class MySQLService(DataBase):
         except Exception as ex:
             connector.rollback()
             self._logger.log_error("{} occupied while executing query:\n{}".format(str(ex), query))
-            return False
+            raise ex
         else:
             if fetch:
                 return result
-            return True
