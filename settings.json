@@ -26,7 +26,7 @@
         "connection_attempts": 3,
         "connection_attempts_delay": 0.5,
         "database": "test",
-        "host": "192.168.0.3",
+        "host": "172.16.238.2",
         "instant_connection_attempts": true,
         "keep_connection_open": true,
         "order_table": "order_records",
@@ -35,7 +35,7 @@
         "user": "root"
     },
     "rabbit": {
-        "host": "192.168.0.2",
+        "host": "172.16.238.3",
         "order_record_config": {
             "exchange_mode": "direct",
             "exchange_name": "order_records",
