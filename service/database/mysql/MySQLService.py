@@ -2,16 +2,18 @@ from service.database.DataBase import DataBase
 
 
 class MySQLService(DataBase):
-    def __init__(self, connection, keep_connection_open, logger):
+
+    def __init__(cls, connection, keep_connection_open, logger):
         """
         :param connection:
         Type of connection: MySQLConnection
         :param keep_connection_open:
         Keep connection open or open/close after each query
         """
-        self.__connection = connection
-        self.__keep_connection_open = keep_connection_open
-        self._logger = logger
+        super(MySQLService, cls).__init__()
+        cls.__connection = connection
+        cls.__keep_connection_open = keep_connection_open
+        cls._logger = logger
 
     def execute_query(self, query, params=None, attempts=3, delay=0.5, instant_connection_attempts=False, commit=False, fetch=False):
         if self.__connection.is_connected():

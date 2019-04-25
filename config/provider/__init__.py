@@ -35,8 +35,7 @@ class GenSettingsKeys:
 
 
 class SettingsKeys:
-
-
+    reporter = "reporter"
     mysql = "mysql"
 
     database = "database"
@@ -47,6 +46,7 @@ class SettingsKeys:
     connection_attempts = "connection_attempts"
     connection_attempts_delay = "connection_attempts_delay"
     order_table = "order_table"
+    batch_delay = "batch_delay"
     password = "password"
     user = "user"
 
@@ -62,6 +62,8 @@ class SettingsKeys:
     exchange_name = "exchange_name"
     exchange_mode = "exchange_mode"
     order_record_config = "order_record_config"
+    retry_amount = "retry_amount"
+    retry_timeout = "retry_timeout"
 
 
 
@@ -71,6 +73,8 @@ class SettingsKeys:
     limited_therads = "limited_therads"
     out_files_max = "out_files_max"
     threads_max = "threads_max"
+    queue_max = "queue_max"
+    manual_stop = "manual_stop"
 
     logging = "logging"
     logger_files_max = "logger_files_max"

@@ -27,12 +27,15 @@ class TaskThread(threading.Thread):
         self.__logger.log_info("Run thread {}".format(self.name))
 
         events = self.__events
-        if events is not None:
-            events.update(self.__thread_pool.__global_events)
-
+        if events is None:
+            events = dict()
         data = self.__data
-        if data is not None:
-            data.update(self.__thread_pool.__global_data)
+        if data is None:
+            data = dict()
+
+        if self.__thread_pool is not None:
+            events.update(self.__thread_pool.get_events())
+            data.update(self.__thread_pool.get_datas())
 
         self._task(events=events, data=data, logger=self.__logger)
 

@@ -10,7 +10,7 @@
             },
             {
                 "destination": "../log",
-                "is_enabled": true,
+                "is_enabled": false,
                 "log_level": 6,
                 "type": "folder"
             },
@@ -23,16 +23,17 @@
         ]
     },
     "mysql": {
-        "connection_attempts": 3,
-        "connection_attempts_delay": 0.5,
-        "database": "test",
+        "connection_attempts": 10,
+        "connection_attempts_delay": 6.0,
+        "database": "gen_db",
         "host": "172.16.238.2",
         "instant_connection_attempts": true,
         "keep_connection_open": true,
         "order_table": "order_records",
         "password": "root",
         "port": "3306",
-        "user": "root"
+        "user": "root",
+        "batch_delay": 0.5
     },
     "rabbit": {
         "host": "172.16.238.3",
@@ -48,12 +49,20 @@
         "password": "guest",
         "port": "5672",
         "user": "guest",
-        "vhost": "/"
+        "vhost": "/",
+        "retry_amount": 10,
+        "retry_timeout": 6.0
+    },
+    "reporter": {
+        "host": "172.16.238.4",
+        "port": 5000
     },
     "system": {
         "clear": true,
+        "manual_stop": 0,
         "limited_therads": false,
         "out_files_max": 10,
-        "threads_max": 10
+        "threads_max": 10,
+        "queue_max": 10
     }
 }

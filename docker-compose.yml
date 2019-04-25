@@ -3,14 +3,13 @@ version: '3.3'
 services:
   db:
     container_name: mysql_server
-    image: mysql:8.0
-    hostname: 'mysql'
+    image: mysql:5.7
     restart: always
+    command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: 'root'
-      MYSQL_DATABASE: 'test'
-    #volumes:
-    #  - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    volumes:
+      - d:/CodingProjects/Python/orders_generator/env/sql:/docker-entrypoint-initdb.d
     ports:
       - '3307:3306'
     networks:
@@ -20,7 +19,6 @@ services:
   rabbitmq:
     container_name: rabbitmq
     image: "rabbitmq:3.7.14-management-alpine"
-    hostname: 'rabbit'
     ports:
       - "15673:15672"
       - "5673:5672"
@@ -31,8 +29,14 @@ services:
   app:
     container_name: generator_app
     image: "order_gen"
+    ports:
+      - "5000:5000"
     networks:
-      - localnet
+      localnet:
+        ipv4_address: 172.16.238.4
+    links:
+      - rabbitmq
+      - db
 
 networks:
   localnet:

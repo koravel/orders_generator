@@ -13,10 +13,10 @@ class Reporter:
         return self._get_report(generation_text, rabbit_consuming_text, mysql_saving_text)
 
     def _get_report(self, generation_text, rabbit_consuming_text, mysql_saving_text):
-        return "===============================REPORT===============================" \
-               "\n{}\n--------------------------------------------------------------------"\
-               "\n{}\n--------------------------------------------------------------------" \
-               "\n{}\n=============================REPORT_END=============================".format(
+        return "<br>===============================REPORT===============================" \
+               "<br>{}<br>--------------------------------------------------------------------"\
+               "<br>{}<br>--------------------------------------------------------------------" \
+               "<br>{}<br>=============================REPORT_END=============================".format(
                 generation_text, rabbit_consuming_text, mysql_saving_text)
 
     def get_generation_text(self):
@@ -52,15 +52,15 @@ class Reporter:
 
     def _get_generation_text(self, red_zone_text, green_zone_text, blue_zone_text, total_amount):
         return "Generation:" \
-                "\n{}\n{}\n{}"\
-                "\nTotal amount: {}".format(
+                "<br>{}<br>{}<br>{}"\
+                "<br>Total amount: {}".format(
                     red_zone_text, green_zone_text, blue_zone_text, total_amount)
 
     def get_rabbit_consuming_text(self):
         return self._get_rabbit_consuming_text(consumed=self.__data[ReportDataKeys.rabbit_consumed])
 
     def _get_rabbit_consuming_text(self, consumed):
-        return "RabbitMQ Consumer:\nconsumed: {}".format(consumed)
+        return "RabbitMQ Consumer:<br>consumed: {}".format(consumed)
 
     def get_mysql_saving_text(self):
         sum = self.__data[ReportDataKeys.mysql_red] + \
@@ -75,8 +75,8 @@ class Reporter:
         )
 
     def _get_mysql_saving_text(self, red, green, blue, total_saved):
-        return "MySQL saving:\nRed: {}\nGreen: {}\nBlue: {}\nTotal saved: {}\n".\
+        return "MySQL saving:<br>Red: {}<br>Green: {}<br>Blue: {}<br>Total saved: {}<br>".\
             format(red, green, blue, total_saved)
 
     def __get_time_text(self, title, amount, avg, min, max, total):
-        return "-{}: {}\navg: {} ms\nmin: {} ms\nmax: {} ms\nTotal: {} ms\n".format(title, amount, avg, min, max, total)
+        return "-{}: {}<br>avg: {} ms<br>min: {} ms<br>max: {} ms<br>Total: {} ms<br>".format(title, amount, avg, min, max, total)

@@ -85,16 +85,16 @@ class App:
         config.gen_settings = App.__gen_settings_provider.load()
 
         App.__logger = logger
-        App.setup_thread_pool(config)
+        #App.setup_thread_pool(config)
 
-        App.__data_collector = ReportDataCollector()
-        App.__data_collector.setup()
+        #App.__data_collector = ReportDataCollector()
+        #App.__data_collector.setup()
 
         App.__reporter = Reporter(App.__data_collector.data)
 
-        App.__batch_amount = config.gen_settings[GenSettingsKeys.portion_amount]
+        #App.__batch_amount = config.gen_settings[GenSettingsKeys.portion_amount]
 
-        return config
+        return config, logger
 
     @staticmethod
     def setup_thread_pool(config):
@@ -108,9 +108,9 @@ class App:
         consume_thread.setup(task=App.__consuming)
         mysql_thread.setup(task=App.__writing_to_mysql)
         report_thread.setup(task=App.__reporting)
-        App.__thread_pool.add_thead(thread=consume_thread)
-        App.__thread_pool.add_thead(thread=mysql_thread)
-        App.__thread_pool.add_thead(thread=report_thread)
+        App.__thread_pool.add_thread(thread=consume_thread)
+        App.__thread_pool.add_thread(thread=mysql_thread)
+        App.__thread_pool.add_thread(thread=report_thread)
 
     @staticmethod
     def setup_services(config):

@@ -1,4 +1,18 @@
 class OrderRecord:
+    text_fields = [
+        "order_id",
+        "status",
+        "timestamp",
+        "currency_pair",
+        "direction",
+        "init_price",
+        "fill_price",
+        "init_volume",
+        "fill_volume",
+        "tags",
+        "description"
+    ]
+
     def __init__(self, order, status, timestamp, zone, fill_price=None, fill_volume=None):
         self.order = order
         self.__status = status

@@ -12,4 +12,4 @@ class DataCollector:
 
     @abc.abstractmethod
     def set_data(self, key, object):
-        raise NotImplementedError(tconst.not_implemented_text.format("add_data"))
+        raise NotImplementedError(tconst.not_implemented_text.format("set_data"))

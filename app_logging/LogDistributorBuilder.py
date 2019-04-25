@@ -4,6 +4,8 @@ from app_logging.FileLogger import FileLogger
 from app_logging.FolderLogger import FolderLogger
 from app_logging.LogDistributor import LogDistributor
 from app_logging.TransitFilter import TransitFilter
+from config.provider import SettingsKeys
+from config.provider.SettingsProvider import SettingsProvider
 
 
 class _LoggerSettingOptions:
@@ -20,8 +22,9 @@ class _LoggerTypes:
 
 
 class LogDistributorBuilder:
-    def setup(self, loggers_settings):
-        self.__loggers_settings = loggers_settings
+    def setup(self, settings_location):
+        settings_provider = SettingsProvider(location=settings_location)
+        self.__loggers_settings = settings_provider.load()[SettingsKeys.logging][SettingsKeys.loggers]
 
     def build_all(self):
         log_distributors = []

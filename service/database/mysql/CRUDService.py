@@ -85,4 +85,5 @@ class CRUDService(MySQLService, CRUD):
             query = "{} where {}".format(query, conditions)
         query += ';'
 
-        return super().execute_query(query=query, commit=False, fetch=True)
+        return super().execute_query(query=query, commit=False, fetch=True, attempts=self.__attempts, delay=self.__delay,
+                                     instant_connection_attempts=self.__instant_connection_attempts)
